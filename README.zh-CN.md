@@ -18,6 +18,12 @@
 - 支持查看每个会话的完整对话内容
 - 支持删除当前, 选中或全部会话
 
+## 在线使用
+
+[https://zhengshuyun-com.github.io/codex-local-session-manager](https://zhengshuyun-com.github.io/codex-local-session-manager)
+
+数据仅在浏览器本地处理, 不会发送到任何第三方或后端.
+
 ## 开源协议
 
 Apache License 2.0. 参见 [LICENSE](./LICENSE).

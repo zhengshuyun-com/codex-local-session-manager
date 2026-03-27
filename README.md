@@ -18,6 +18,12 @@ A local web tool for browsing and cleaning Codex session history.
 - Full conversation preview for each session
 - Delete current, selected, or all sessions
 
+## Open Online
+
+[https://zhengshuyun-com.github.io/codex-local-session-manager](https://zhengshuyun-com.github.io/codex-local-session-manager)
+
+Data is processed locally in the browser and is not sent to any third party or backend.
+
 ## License
 
 Apache License 2.0. See [LICENSE](./LICENSE).

@@ -699,6 +699,14 @@ dd {
   font-size: 0.9rem;
 }
 
+.detail-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+#download-current-button,
 #delete-current-button {
   flex-shrink: 0;
   min-width: 92px;
@@ -1217,9 +1225,14 @@ dd {
               <h2 id="detail-section-title" class="section-title">详情</h2>
               <p id="detail-caption" class="section-description">未选择会话</p>
             </div>
-            <button id="delete-current-button" class="danger-button small" type="button" disabled>
-              删除当前
-            </button>
+            <div class="detail-actions">
+              <button id="download-current-button" class="secondary-button small" type="button" disabled>
+                下载
+              </button>
+              <button id="delete-current-button" class="danger-button small" type="button" disabled>
+                删除
+              </button>
+            </div>
           </div>
 
           <div class="detail-scroll">
@@ -1414,7 +1427,9 @@ const I18N = {
       unselectPage: "取消全选",
       prevPage: "上一页",
       nextPage: "下一页",
+      download: "下载",
       deleteCurrent: "删除当前",
+      delete: "删除",
       cancel: "取消",
       confirmDelete: "确认删除",
       localeIndicator: "中",
@@ -1542,7 +1557,9 @@ const I18N = {
       unselectPage: "Unselect page",
       prevPage: "Prev",
       nextPage: "Next",
+      download: "Download",
       deleteCurrent: "Delete current",
+      delete: "Delete",
       cancel: "Cancel",
       confirmDelete: "Confirm delete",
       localeIndicator: "EN",
@@ -1672,6 +1689,7 @@ const elements = {
   detailPreviewTitle: document.querySelector("#detail-preview-title"),
   detailPreview: document.querySelector("#detail-preview"),
   detailMessageCount: document.querySelector("#detail-message-count"),
+  downloadCurrentButton: document.querySelector("#download-current-button"),
   deleteCurrentButton: document.querySelector("#delete-current-button"),
   template: queryAny(["#session-item-template", "#group-item-template"]),
   localeToggleButton: document.querySelector("#locale-toggle-button"),
@@ -1704,6 +1722,7 @@ function initialize() {
   elements.pageSizeSelect.addEventListener("change", handlePageSizeChange);
   elements.prevPageButton.addEventListener("click", () => changePage(-1));
   elements.nextPageButton.addEventListener("click", () => changePage(1));
+  elements.downloadCurrentButton.addEventListener("click", () => downloadCurrentSession().catch(handleError));
   elements.deleteCurrentButton.addEventListener("click", () => openDeleteDialog("single"));
   elements.modalCancelButton.addEventListener("click", closeDeleteDialog);
   elements.modalConfirmButton.addEventListener("click", () => confirmDelete().catch(handleError));
@@ -2112,8 +2131,10 @@ function renderDetails(session) {
     elements.detailPreviewTitle.textContent = t("section.conversation");
     setBadgeText(elements.detailMessageCount, "0");
     elements.detailPreview.innerHTML = `<p class="empty-state">${escapeHtml(t("detail.noContent"))}</p>`;
+    elements.downloadCurrentButton.disabled = true;
+    elements.downloadCurrentButton.textContent = t("buttons.download");
     elements.deleteCurrentButton.disabled = true;
-    elements.deleteCurrentButton.textContent = t("buttons.deleteCurrent");
+    elements.deleteCurrentButton.textContent = t("buttons.delete");
     return;
   }
 
@@ -2126,10 +2147,34 @@ function renderDetails(session) {
     makeOverviewItem(t("labels.status"), session.stale ? t("detail.statusStale") : t("detail.statusNormal")),
   ].join("");
   elements.detailPreviewTitle.textContent = t("section.conversation");
+  elements.downloadCurrentButton.disabled = !isSessionDownloadable(session);
+  elements.downloadCurrentButton.textContent = t("buttons.download");
   elements.deleteCurrentButton.disabled = !isSessionDeletable(session);
-  elements.deleteCurrentButton.textContent = t("buttons.deleteCurrent");
+  elements.deleteCurrentButton.textContent = t("buttons.delete");
 
   renderTimeline(session).catch(handleError);
+}
+
+async function downloadCurrentSession() {
+  const session = getActiveSession();
+
+  if (!session || !isSessionDownloadable(session)) {
+    return;
+  }
+
+  const file = await session.fileHandle.getFile();
+  const url = URL.createObjectURL(file);
+  const anchor = document.createElement("a");
+
+  anchor.href = url;
+  anchor.download = session.fileName || `${session.id}.jsonl`;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+
+  window.setTimeout(() => {
+    URL.revokeObjectURL(url);
+  }, 0);
 }
 
 async function renderTimeline(session) {
@@ -2648,6 +2693,7 @@ function applyLocale(locale) {
   setText(elements.deleteAllButton, t("buttons.deleteAll"));
   setText(elements.prevPageButton, t("buttons.prevPage"));
   setText(elements.nextPageButton, t("buttons.nextPage"));
+  setText(elements.downloadCurrentButton, t("buttons.download"));
   setText(elements.modalCancelButton, t("buttons.cancel"));
 
   elements.localeToggleButton.textContent = t("buttons.localeIndicator");
@@ -2778,6 +2824,10 @@ function safeJsonParse(line) {
 
 function isSessionDeletable(session) {
   return !session.stale && Boolean(session.parentHandle && session.fileName);
+}
+
+function isSessionDownloadable(session) {
+  return !session.stale && Boolean(session.fileHandle);
 }
 
 function getSessionTitle(rawTitle, fallbackId) {

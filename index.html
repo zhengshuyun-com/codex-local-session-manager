@@ -1,0 +1,2894 @@
+<!--
+  ~ Copyright (C) zhengshuyun.com The Android Open Source Project
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Codex 本地会话管理</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+:root {
+  color-scheme: light dark;
+  --bg: #f4f4f5;
+  --bg-elevated: #ffffff;
+  --surface: rgba(255, 255, 255, 0.92);
+  --surface-strong: rgba(255, 255, 255, 0.98);
+  --surface-soft: rgba(250, 250, 250, 0.94);
+  --border: rgba(17, 24, 39, 0.08);
+  --border-strong: rgba(17, 24, 39, 0.14);
+  --text: #111111;
+  --text-soft: #5f5f66;
+  --text-faint: #8f8f95;
+  --accent: #161616;
+  --accent-contrast: #ffffff;
+  --danger: #c62828;
+  --danger-soft: rgba(198, 40, 40, 0.08);
+  --shadow: 0 20px 50px rgba(17, 24, 39, 0.08);
+  --radius-xl: 24px;
+  --radius-lg: 18px;
+  --radius-md: 14px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #09090b;
+    --bg-elevated: #111113;
+    --surface: rgba(18, 18, 20, 0.9);
+    --surface-strong: rgba(26, 26, 29, 0.98);
+    --surface-soft: rgba(20, 20, 23, 0.96);
+    --border: rgba(255, 255, 255, 0.08);
+    --border-strong: rgba(255, 255, 255, 0.14);
+    --text: #f5f5f5;
+    --text-soft: #adadb8;
+    --text-faint: #7d7d85;
+    --accent: #f5f5f5;
+    --accent-contrast: #101010;
+    --danger: #ff6b6b;
+    --danger-soft: rgba(255, 107, 107, 0.12);
+    --shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+  }
+}
+
+:root[data-theme="light"] {
+  --bg: #f4f4f5;
+  --bg-elevated: #ffffff;
+  --surface: rgba(255, 255, 255, 0.92);
+  --surface-strong: rgba(255, 255, 255, 0.98);
+  --surface-soft: rgba(250, 250, 250, 0.94);
+  --border: rgba(17, 24, 39, 0.08);
+  --border-strong: rgba(17, 24, 39, 0.14);
+  --text: #111111;
+  --text-soft: #5f5f66;
+  --text-faint: #8f8f95;
+  --accent: #161616;
+  --accent-contrast: #ffffff;
+  --danger: #c62828;
+  --danger-soft: rgba(198, 40, 40, 0.08);
+  --shadow: 0 20px 50px rgba(17, 24, 39, 0.08);
+}
+
+:root[data-theme="dark"] {
+  --bg: #09090b;
+  --bg-elevated: #111113;
+  --surface: rgba(18, 18, 20, 0.9);
+  --surface-strong: rgba(26, 26, 29, 0.98);
+  --surface-soft: rgba(20, 20, 23, 0.96);
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.14);
+  --text: #f5f5f5;
+  --text-soft: #adadb8;
+  --text-faint: #7d7d85;
+  --accent: #f5f5f5;
+  --accent-contrast: #101010;
+  --danger: #ff6b6b;
+  --danger-soft: rgba(255, 107, 107, 0.12);
+  --shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background:
+    radial-gradient(circle at top left, rgba(127, 127, 132, 0.08), transparent 30rem),
+    linear-gradient(180deg, var(--bg) 0%, color-mix(in srgb, var(--bg), var(--bg-elevated) 16%) 100%);
+  color: var(--text);
+  font-family: "IBM Plex Sans", sans-serif;
+}
+
+body {
+  padding: 16px;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+.shell {
+  display: grid;
+  gap: 12px;
+  min-height: calc(100dvh - 32px);
+}
+
+.surface {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(14px);
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 14px;
+}
+
+.hero-main,
+.hero-side {
+  display: grid;
+  gap: 4px;
+}
+
+.hero-side-top {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+h1 {
+  font-size: clamp(1.35rem, 2vw, 1.9rem);
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.hero-description,
+.body-copy {
+  color: var(--text-soft);
+  line-height: 1.45;
+}
+
+.support-hint,
+.muted {
+  color: var(--text-faint);
+}
+
+.support-hint:empty {
+  display: none;
+}
+
+.workspace {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 12px;
+  min-height: 0;
+  flex: 1 1 auto;
+}
+
+.top-panels {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.18fr) minmax(0, 1fr);
+  gap: 8px;
+  align-items: stretch;
+}
+
+.bottom-panels {
+  display: grid;
+  grid-template-columns: minmax(0, 1.06fr) minmax(340px, 0.84fr);
+  gap: 12px;
+  min-height: 0;
+}
+
+.compact-surface,
+.list-surface,
+.detail-surface {
+  padding: 10px 12px;
+}
+
+.compact-surface {
+  display: grid;
+  align-content: start;
+}
+
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.section-head.compact {
+  align-items: center;
+}
+
+.section-title {
+  font-size: 0.96rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.section-description {
+  margin-top: 2px;
+  color: var(--text-soft);
+  font-size: 0.86rem;
+  line-height: 1.35;
+}
+
+.action-stack,
+.modal-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.compact-actions {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.primary-button,
+.secondary-button,
+.danger-button,
+.theme-button {
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  transition:
+    background-color 180ms ease,
+    color 180ms ease,
+    border-color 180ms ease,
+    transform 180ms ease,
+    opacity 180ms ease;
+}
+
+.primary-button:hover,
+.secondary-button:hover,
+.danger-button:hover,
+.theme-button:hover,
+.session-item:hover,
+.session-main:hover {
+  transform: translateY(-1px);
+}
+
+.primary-button {
+  background: var(--accent);
+  color: var(--accent-contrast);
+  border-color: var(--accent);
+}
+
+.secondary-button,
+.theme-button {
+  background: transparent;
+  color: var(--text);
+}
+
+.secondary-button.small,
+.danger-button.small {
+  padding: 8px 12px;
+}
+
+.danger-button {
+  background: var(--danger);
+  color: #ffffff;
+  border-color: var(--danger);
+  white-space: nowrap;
+}
+
+.danger-button.subtle {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+button:disabled {
+  opacity: 0.48;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.theme-button {
+  min-width: 84px;
+  padding: 7px 10px;
+  font-size: 0.82rem;
+}
+
+.icon-button {
+  min-width: 0;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.locale-button {
+  min-width: 38px;
+  height: 38px;
+  padding: 0 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.theme-icon {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+.theme-icon svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  stroke: currentColor;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.theme-button.is-active {
+  background: var(--accent);
+  color: var(--accent-contrast);
+  border-color: var(--accent);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface-soft);
+  color: var(--text-soft);
+  font-size: 0.84rem;
+}
+
+.metrics-surface {
+  display: grid;
+  gap: 6px;
+}
+
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.metric-card {
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background: var(--surface-strong);
+  padding: 8px 9px;
+}
+
+.metric-label {
+  color: var(--text-soft);
+  font-size: 0.8rem;
+}
+
+.metric-card strong {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.96rem;
+  letter-spacing: -0.04em;
+}
+
+.compact-meta,
+.meta-grid {
+  display: grid;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.compact-meta {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 10px;
+  row-gap: 4px;
+}
+
+.meta-grid div {
+  display: grid;
+  gap: 4px;
+}
+
+dt {
+  color: var(--text-faint);
+  font-size: 0.82rem;
+}
+
+dd {
+  margin: 0;
+  color: var(--text);
+  font-size: 0.9rem;
+  word-break: break-word;
+  font-family: "IBM Plex Mono", monospace;
+}
+
+.toolbar-button {
+  padding: 7px 10px;
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+.filter-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(110px, 0.75fr) minmax(110px, 0.75fr);
+  gap: 6px;
+  align-items: center;
+}
+
+.search-field {
+  grid-column: auto;
+}
+
+.field {
+  display: grid;
+  gap: 4px;
+}
+
+.field span,
+.inline-field span,
+.checkbox-row span {
+  font-size: 0.84rem;
+  color: var(--text-soft);
+}
+
+.field input,
+.field select,
+.inline-field select {
+  width: 100%;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--surface-strong);
+  color: var(--text);
+  padding: 8px 10px;
+}
+
+.inline-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.checkbox-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 0;
+}
+
+.checkbox-row input,
+.session-checkbox,
+.detail-session-checkbox {
+  accent-color: var(--danger);
+}
+
+.filter-checkbox {
+  justify-self: start;
+  align-self: center;
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-soft);
+}
+
+.list-surface,
+.detail-surface {
+  display: grid;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.list-surface {
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 12px;
+}
+
+.detail-surface {
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 12px;
+}
+
+.list-head-right {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.list-scroll,
+.detail-scroll {
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-gutter: stable;
+}
+
+.detail-scroll {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+}
+
+.session-list,
+.preview-list,
+.conversation-stream {
+  display: grid;
+  gap: 10px;
+}
+
+.detail-session-list {
+  display: grid;
+  gap: 8px;
+}
+
+.session-item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background: var(--surface-soft);
+  padding: 8px;
+  transition:
+    border-color 180ms ease,
+    background-color 180ms ease,
+    transform 180ms ease;
+}
+
+.session-item.is-active {
+  border-color: var(--border-strong);
+  background: var(--surface-strong);
+}
+
+.session-select {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  min-width: 28px;
+  padding-top: 10px;
+}
+
+.session-main {
+  border: 0;
+  padding: 6px 8px;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+}
+
+.group-pills {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.group-pills .session-size {
+  white-space: nowrap;
+}
+
+.group-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 24px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface-strong);
+  color: var(--text-soft);
+  font-size: 0.76rem;
+  white-space: nowrap;
+}
+
+.session-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.session-row.meta {
+  margin-top: 8px;
+}
+
+.session-title {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+}
+
+.session-size,
+.session-id,
+.session-updated,
+.session-path,
+.session-summary,
+.detail-session-size,
+.detail-session-id,
+.detail-session-updated {
+  color: var(--text-soft);
+  font-size: 0.84rem;
+}
+
+.session-id,
+.session-path,
+.detail-title,
+.detail-session-id {
+  font-family: "IBM Plex Mono", monospace;
+}
+
+.session-summary {
+  margin-top: 8px;
+  word-break: break-word;
+  line-height: 1.45;
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.pagination-bar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+@media (min-width: 1041px) {
+  .bottom-panels {
+    height: calc(100dvh - 160px);
+    min-height: calc(100dvh - 160px);
+  }
+}
+
+.page-indicator {
+  color: var(--text-soft);
+  font-size: 0.9rem;
+}
+
+#delete-current-button {
+  flex-shrink: 0;
+  min-width: 92px;
+}
+
+.detail-block {
+  display: grid;
+  gap: 10px;
+}
+
+.detail-title {
+  font-size: 0.94rem;
+  padding: 12px 14px;
+  border-radius: var(--radius-lg);
+  background: var(--surface-soft);
+  border: 1px solid var(--border);
+  font-weight: 500;
+}
+
+.preview-item,
+.empty-state {
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background: var(--surface-soft);
+  padding: 12px 14px;
+}
+
+.conversation-item {
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background: var(--surface-soft);
+  padding: 12px 14px;
+  display: grid;
+  gap: 8px;
+}
+
+.conversation-item.user {
+  border-color: color-mix(in srgb, var(--accent), transparent 78%);
+}
+
+.conversation-item.assistant {
+  border-color: var(--border-strong);
+}
+
+.conversation-item.system {
+  background: color-mix(in srgb, var(--surface-soft), transparent 15%);
+}
+
+.conversation-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-faint);
+  font-size: 0.8rem;
+}
+
+.conversation-role {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 22px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface-strong);
+  color: var(--text-soft);
+  font-size: 0.76rem;
+}
+
+.conversation-body {
+  color: var(--text);
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.conversation-divider {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  color: var(--text-faint);
+  font-size: 0.78rem;
+}
+
+.conversation-divider::after {
+  content: "";
+  height: 1px;
+  background: var(--border);
+}
+
+.legacy-session-block {
+  display: none !important;
+}
+
+.detail-session-item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background: var(--surface-soft);
+  padding: 8px;
+}
+
+.detail-session-item.is-active {
+  border-color: var(--border-strong);
+  background: var(--surface-strong);
+}
+
+.detail-session-select {
+  padding-top: 8px;
+}
+
+.detail-session-main {
+  border: 0;
+  padding: 4px 6px;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+}
+
+.detail-session-title {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+}
+
+.detail-session-id {
+  word-break: break-all;
+}
+
+.preview-item-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--text-faint);
+  font-size: 0.82rem;
+}
+
+.preview-item-body {
+  margin-top: 10px;
+  color: var(--text);
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.modal[hidden] {
+  display: none;
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+}
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.48);
+}
+
+.modal-card {
+  position: relative;
+  max-width: 560px;
+  margin: 10vh auto 0;
+  padding: 22px;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border);
+  background: var(--surface-strong);
+  box-shadow: var(--shadow);
+  display: grid;
+  gap: 16px;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.modal-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger-soft), transparent 18%);
+  border: 1px solid color-mix(in srgb, var(--danger), transparent 70%);
+  flex-shrink: 0;
+}
+
+.modal-icon svg {
+  width: 22px;
+  height: 22px;
+  stroke: currentColor;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.9;
+}
+
+.modal-copy {
+  display: grid;
+  gap: 2px;
+}
+
+.modal-subtitle {
+  color: var(--danger);
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.modal-summary {
+  border: 1px solid var(--border);
+  background: var(--surface-soft);
+  border-radius: var(--radius-lg);
+  padding: 12px 14px;
+  display: grid;
+  gap: 8px;
+}
+
+.modal-summary-head {
+  color: var(--text-faint);
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.modal-warning-box {
+  border-radius: var(--radius-lg);
+  padding: 12px 14px;
+  border: 1px solid color-mix(in srgb, var(--danger), transparent 72%);
+  background: color-mix(in srgb, var(--danger-soft), transparent 12%);
+}
+
+@media (max-width: 1240px) {
+  .hero {
+    grid-template-columns: 1fr;
+  }
+
+  .top-panels {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 0.95fr);
+  }
+
+  .bottom-panels {
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 0.92fr);
+  }
+}
+
+@media (max-width: 1040px) {
+  .top-panels,
+  .bottom-panels {
+    grid-template-columns: 1fr;
+  }
+
+  .bottom-panels {
+    grid-auto-rows: minmax(320px, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  body {
+    padding: 12px;
+  }
+
+  .shell {
+    min-height: calc(100dvh - 24px);
+  }
+
+  .hero,
+  .compact-surface,
+  .list-surface,
+  .detail-surface,
+  .modal-card {
+    padding: 14px;
+  }
+
+  .modal-header,
+  .modal-actions {
+    gap: 10px;
+  }
+
+  .filter-grid,
+  .metric-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-side-top {
+    justify-content: stretch;
+  }
+
+  .icon-button {
+    width: 38px;
+    height: 38px;
+  }
+
+  .filter-checkbox {
+    justify-self: start;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+  }
+
+  .section-head,
+  .list-head-right,
+  .session-row,
+  .pagination-bar,
+  .modal-actions,
+  .compact-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .compact-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .bottom-panels {
+    grid-auto-rows: minmax(280px, 42dvh);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <header class="surface hero">
+        <div class="hero-main">
+          <h1 id="hero-title">Codex 本地会话管理</h1>
+          <p id="hero-description" class="hero-description">
+            本地管理 Ccodex 历史会话. 目录授权后即可分页浏览, 筛选, 预览和清理.
+          </p>
+          <p id="support-hint" class="support-hint"></p>
+        </div>
+
+        <div class="hero-side">
+          <div class="hero-side-top">
+            <button
+              id="locale-toggle-button"
+              class="secondary-button locale-button"
+              type="button"
+              aria-label="Switch to English"
+              title="Switch to English"
+            >
+              中
+            </button>
+            <button
+              id="theme-toggle-button"
+              class="theme-button icon-button"
+              type="button"
+              aria-label="切换主题"
+              title="切换主题"
+            ></button>
+          </div>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <div class="top-panels">
+          <section class="surface compact-surface">
+            <div class="section-head">
+              <h2 id="status-title" class="section-title">状态</h2>
+              <span id="status-badge" class="badge">未连接</span>
+            </div>
+            <p id="status-text" class="body-copy">未选择目录</p>
+            <dl class="meta-grid compact-meta">
+              <div>
+                <dt id="status-directory-label">目录</dt>
+                <dd id="status-directory">-</dd>
+              </div>
+              <div>
+                <dt id="status-scanned-label">扫描</dt>
+                <dd id="status-scanned-at">-</dd>
+              </div>
+            </dl>
+            <div class="action-stack compact-actions">
+              <button id="pick-directory-button" class="primary-button toolbar-button" type="button">
+                选择目录
+              </button>
+              <button id="reload-button" class="secondary-button toolbar-button" type="button" disabled>
+                重新扫描
+              </button>
+              <button id="delete-selected-button" class="danger-button toolbar-button" type="button" disabled>
+                删除选中
+              </button>
+              <button id="delete-all-button" class="danger-button subtle toolbar-button" type="button" disabled>
+                删除全部
+              </button>
+            </div>
+          </section>
+
+          <section class="surface compact-surface">
+            <div class="section-head">
+              <h2 id="filter-title" class="section-title">筛选</h2>
+            </div>
+            <div class="filter-grid">
+              <label class="field search-field">
+                <span id="search-label">搜索</span>
+                <input id="search-input" type="search" placeholder="标题 / 摘要 / ID" />
+              </label>
+              <label class="field">
+                <span id="age-filter-label">时间</span>
+                <select id="age-filter">
+                  <option id="age-option-all" value="all">全部</option>
+                  <option id="age-option-7d" value="7d">近 7 天</option>
+                  <option id="age-option-30d" value="30d">近 30 天</option>
+                  <option id="age-option-older" value="older">30 天前</option>
+                </select>
+              </label>
+              <label class="field">
+                <span id="sort-label">排序</span>
+                <select id="sort-select">
+                  <option id="sort-option-updated" value="updated-desc">最近更新</option>
+                  <option id="sort-option-size" value="size-desc">文件大小</option>
+                  <option id="sort-option-title" value="title-asc">标题 A-Z</option>
+                </select>
+              </label>
+              <label class="checkbox-row filter-checkbox">
+                <input id="stale-only-checkbox" type="checkbox" />
+                <span id="stale-only-label">只看脏索引</span>
+              </label>
+            </div>
+          </section>
+
+          <section class="surface compact-surface metrics-surface">
+            <div class="section-head">
+              <h2 id="metrics-title" class="section-title">统计</h2>
+            </div>
+            <div class="metric-grid">
+              <article class="metric-card">
+                <span id="metric-total-label" class="metric-label">会话总数</span>
+                <strong id="metric-group-total">-</strong>
+              </article>
+              <article class="metric-card">
+                <span id="metric-filtered-label" class="metric-label">筛选结果</span>
+                <strong id="metric-session-total">-</strong>
+              </article>
+              <article class="metric-card">
+                <span id="metric-size-label" class="metric-label">总大小</span>
+                <strong id="metric-total-size">-</strong>
+              </article>
+              <article class="metric-card">
+                <span id="metric-stale-label" class="metric-label">脏索引</span>
+                <strong id="metric-stale-count">-</strong>
+              </article>
+              <article class="metric-card">
+                <span id="metric-selected-label" class="metric-label">已选中</span>
+                <strong id="metric-selected-count">0</strong>
+              </article>
+            </div>
+          </section>
+        </div>
+
+        <div class="bottom-panels">
+          <section class="surface list-surface">
+            <div class="section-head">
+              <div>
+                <h2 id="list-title" class="section-title">会话列表</h2>
+                <p id="list-caption" class="section-description">未扫描</p>
+              </div>
+              <div class="list-head-right">
+                <button id="select-page-button" class="secondary-button small" type="button" disabled>
+                  全选当前页
+                </button>
+                <label class="inline-field">
+                  <span id="page-size-label">每页显示</span>
+                  <select id="page-size-select">
+                    <option value="10" selected>10</option>
+                    <option value="20">20</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                  </select>
+                </label>
+                <span id="pagination-summary" class="badge">0 / 0</span>
+              </div>
+            </div>
+
+            <div class="list-scroll">
+              <div id="session-list" class="session-list"></div>
+            </div>
+
+            <div class="pagination-bar">
+              <button id="prev-page-button" class="secondary-button small" type="button" disabled>
+                上一页
+              </button>
+              <span id="page-indicator" class="page-indicator">第 0 / 0 页</span>
+              <button id="next-page-button" class="secondary-button small" type="button" disabled>
+                下一页
+              </button>
+            </div>
+          </section>
+
+          <section class="surface detail-surface">
+          <div class="section-head">
+            <div>
+              <h2 id="detail-section-title" class="section-title">详情</h2>
+              <p id="detail-caption" class="section-description">未选择会话</p>
+            </div>
+            <button id="delete-current-button" class="danger-button small" type="button" disabled>
+              删除当前
+            </button>
+          </div>
+
+          <div class="detail-scroll">
+            <div class="detail-block">
+              <h3 id="detail-title" class="detail-title">未选择会话</h3>
+              <dl id="detail-overview" class="meta-grid">
+                <div>
+                  <dt id="detail-overview-default-label">会话 ID</dt>
+                  <dd>-</dd>
+                </div>
+              </dl>
+            </div>
+
+            <div class="detail-block">
+              <div class="section-head compact">
+                <h2 id="detail-preview-title" class="section-title">完整对话</h2>
+                <span id="detail-message-count" class="badge">0</span>
+              </div>
+              <div id="detail-preview" class="conversation-stream">
+                <p class="empty-state">暂无会话内容.</p>
+              </div>
+            </div>
+
+            <div class="detail-block legacy-session-block" hidden aria-hidden="true">
+              <div class="section-head compact">
+                <h2 id="detail-sessions-title" class="section-title">组内会话</h2>
+                <span id="detail-session-count" class="badge">0</span>
+              </div>
+              <div id="detail-sessions" class="detail-session-list">
+                <p class="empty-state">暂无数据.</p>
+              </div>
+            </div>
+          </div>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <div id="confirm-modal" class="modal" hidden>
+      <div class="modal-backdrop"></div>
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <div class="modal-header">
+          <div class="modal-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path d="M12 8v5"></path>
+              <path d="M12 16.5h.01"></path>
+              <path d="M10.3 3.8 2.9 17a2 2 0 0 0 1.8 3h14.6a2 2 0 0 0 1.8-3L13.7 3.8a2 2 0 0 0-3.4 0Z"></path>
+            </svg>
+          </div>
+          <div class="modal-copy">
+            <h2 id="modal-title" class="section-title">确认删除</h2>
+            <p id="modal-subtitle" class="modal-subtitle">危险操作</p>
+          </div>
+        </div>
+        <div class="modal-summary">
+          <div id="modal-summary-head" class="modal-summary-head">即将执行</div>
+          <div>
+            <p id="modal-description" class="section-description"></p>
+          </div>
+        </div>
+        <div class="modal-warning-box">
+          <p id="modal-warning" class="body-copy"></p>
+        </div>
+        <div class="modal-actions">
+          <button id="modal-cancel-button" class="secondary-button" type="button">取消</button>
+          <button id="modal-confirm-button" class="danger-button small" type="button" disabled>
+            确认删除
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <template id="group-item-template">
+      <article class="session-item">
+        <label class="session-select">
+          <input type="checkbox" class="session-checkbox" />
+          <span></span>
+        </label>
+        <button class="session-main" type="button">
+          <div class="session-row">
+            <strong class="session-title"></strong>
+            <div class="group-pills">
+              <span class="group-pill group-count" hidden></span>
+              <span class="session-size"></span>
+            </div>
+          </div>
+          <div class="session-row meta">
+            <span class="session-id"></span>
+            <span class="session-updated"></span>
+          </div>
+          <div class="session-summary"></div>
+        </button>
+      </article>
+    </template>
+
+    <template id="session-item-template">
+      <article class="session-item">
+        <label class="session-select">
+          <input type="checkbox" class="session-checkbox" />
+          <span></span>
+        </label>
+        <button class="session-main" type="button">
+          <div class="session-row">
+            <strong class="session-title"></strong>
+            <span class="session-size"></span>
+          </div>
+          <div class="session-row meta">
+            <span class="session-id"></span>
+            <span class="session-updated"></span>
+          </div>
+          <div class="session-summary"></div>
+        </button>
+      </article>
+    </template>
+
+    <template id="detail-session-template">
+      <article class="detail-session-item">
+        <label class="session-select detail-session-select">
+          <input type="checkbox" class="detail-session-checkbox" />
+          <span></span>
+        </label>
+        <button class="detail-session-main" type="button">
+          <div class="session-row">
+            <strong class="detail-session-title"></strong>
+            <span class="detail-session-size"></span>
+          </div>
+          <div class="session-row meta">
+            <span class="detail-session-id"></span>
+            <span class="detail-session-updated"></span>
+          </div>
+        </button>
+      </article>
+    </template>
+
+    <script type="module">
+const THEME_STORAGE_KEY = "codex-session-console-theme";
+const LOCALE_STORAGE_KEY = "codex-session-console-locale";
+const TOOL_OUTPUT_LIMIT = 600;
+
+const I18N = {
+  "zh-CN": {
+    meta: {
+      title: "Codex 本地会话管理",
+      heroTitle: "Codex 本地会话管理",
+      heroDescription: "本地管理 Ccodex 历史会话. 目录授权后即可分页浏览, 筛选, 预览和清理.",
+    },
+    support: {
+      unsupported: "请使用最新版 Chrome 或 Edge.",
+    },
+    section: {
+      status: "状态",
+      filter: "筛选",
+      metrics: "统计",
+      list: "会话列表",
+      detail: "详情",
+      conversation: "完整对话",
+    },
+    labels: {
+      directory: "目录",
+      scanned: "扫描",
+      search: "搜索",
+      searchPlaceholder: "标题 / 摘要 / ID",
+      age: "时间",
+      sort: "排序",
+      staleOnly: "只看脏索引",
+      totalSessions: "会话总数",
+      filteredResults: "筛选结果",
+      totalSize: "总大小",
+      staleIndexes: "脏索引",
+      selected: "已选中",
+      pageSize: "每页显示",
+      sessionId: "会话 ID",
+      fileSize: "文件大小",
+      updatedAt: "最后更新",
+      status: "状态",
+    },
+    filter: {
+      all: "全部",
+      last7d: "近 7 天",
+      last30d: "近 30 天",
+      older: "30 天前",
+      updatedDesc: "最近更新",
+      sizeDesc: "文件大小",
+      titleAsc: "标题 A-Z",
+    },
+    buttons: {
+      pickDirectory: "选择目录",
+      reload: "重新扫描",
+      deleteSelected: "删除选中",
+      deleteAll: "删除全部",
+      selectPage: "全选当前页",
+      unselectPage: "取消全选",
+      prevPage: "上一页",
+      nextPage: "下一页",
+      deleteCurrent: "删除当前",
+      cancel: "取消",
+      confirmDelete: "确认删除",
+      localeIndicator: "中",
+    },
+    badge: {
+      disconnected: "未连接",
+      connected: "已连接",
+      loading: "扫描中",
+      error: "异常",
+    },
+    statusText: {
+      unselectedDir: "未选择目录",
+      connectedCount: "{{count}} 条会话",
+      currentSession: "当前会话",
+    },
+    list: {
+      unscanned: "未扫描",
+      noResults: "没有匹配的会话.",
+      pageEmpty: "当前页没有内容.",
+      zeroResults: "0 条结果",
+      showing: "当前显示 {{start}}-{{end}} / {{total}} 条会话",
+    },
+    detail: {
+      unselectedCaption: "未选择会话",
+      unselectedTitle: "未选择会话",
+      noContent: "暂无会话内容.",
+      noRenderableContent: "没有可展示的会话内容.",
+      loading: "加载中.",
+      statusNormal: "正常",
+      statusStale: "脏索引",
+    },
+    modal: {
+      titleAll: "确认删除全部会话",
+      titleSingle: "确认删除当前会话",
+      titleSelected: "确认删除选中会话",
+      subtitle: "危险操作",
+      summaryHead: "即将执行",
+      warningAll: "该操作会移除当前目录下全部可删除的会话文件. 倒计时结束后才允许确认.",
+      warningDelete: "删除后无法恢复. 倒计时结束后才允许确认.",
+      descAll: "即将删除 {{count}} 个会话文件, 共 {{size}}.",
+      descSingle: "即将删除当前会话「{{title}}」, 共 {{size}}.",
+      descSelected: "即将删除 {{count}} 个已选会话, 共 {{size}}.",
+      confirmCountdown: "{{seconds}}s 后可确认",
+    },
+    pagination: {
+      summary: "{{start}}-{{end}} / {{total}}",
+      summaryEmpty: "0 / 0",
+      page: "第 {{current}} / {{total}} 页",
+      pageEmpty: "第 0 / 0 页",
+    },
+    timeline: {
+      user: "用户",
+      assistant: "Codex",
+      toolCall: "工具调用",
+      toolOutput: "工具输出",
+      historyInput: "历史输入 #{{index}}",
+    },
+    summary: {
+      staleMissing: "索引存在, 原始会话文件不存在.",
+      none: "没有摘要.",
+    },
+    locale: {
+      switchTo: "切换到英文",
+    },
+    theme: {
+      switchToLight: "切换到浅色模式",
+      switchToDark: "切换到深色模式",
+    },
+    errors: {
+      selectCodexRoot: "请先选择包含 sessions 目录的 .codex 文件夹.",
+      unknown: "发生未知错误",
+    },
+  },
+  en: {
+    meta: {
+      title: "Codex Local Session Manager",
+      heroTitle: "Codex Local Session Manager",
+      heroDescription: "Manage local Codex session history. Authorize a directory to browse, filter, preview, and clean sessions with pagination.",
+    },
+    support: {
+      unsupported: "Please use the latest Chrome or Edge.",
+    },
+    section: {
+      status: "Status",
+      filter: "Filters",
+      metrics: "Stats",
+      list: "Sessions",
+      detail: "Details",
+      conversation: "Conversation",
+    },
+    labels: {
+      directory: "Directory",
+      scanned: "Scanned",
+      search: "Search",
+      searchPlaceholder: "Title / summary / ID",
+      age: "Age",
+      sort: "Sort",
+      staleOnly: "Stale only",
+      totalSessions: "Sessions",
+      filteredResults: "Filtered",
+      totalSize: "Size",
+      staleIndexes: "Stale",
+      selected: "Selected",
+      pageSize: "Per page",
+      sessionId: "Session ID",
+      fileSize: "File size",
+      updatedAt: "Updated",
+      status: "Status",
+    },
+    filter: {
+      all: "All",
+      last7d: "Last 7 days",
+      last30d: "Last 30 days",
+      older: "Older than 30 days",
+      updatedDesc: "Recently updated",
+      sizeDesc: "File size",
+      titleAsc: "Title A-Z",
+    },
+    buttons: {
+      pickDirectory: "Pick directory",
+      reload: "Rescan",
+      deleteSelected: "Delete selected",
+      deleteAll: "Delete all",
+      selectPage: "Select page",
+      unselectPage: "Unselect page",
+      prevPage: "Prev",
+      nextPage: "Next",
+      deleteCurrent: "Delete current",
+      cancel: "Cancel",
+      confirmDelete: "Confirm delete",
+      localeIndicator: "EN",
+    },
+    badge: {
+      disconnected: "Offline",
+      connected: "Connected",
+      loading: "Scanning",
+      error: "Error",
+    },
+    statusText: {
+      unselectedDir: "No directory selected",
+      connectedCount: "{{count}} sessions",
+      currentSession: "Current session",
+    },
+    list: {
+      unscanned: "Not scanned",
+      noResults: "No matching sessions.",
+      pageEmpty: "This page is empty.",
+      zeroResults: "0 results",
+      showing: "Showing {{start}}-{{end}} / {{total}} sessions",
+    },
+    detail: {
+      unselectedCaption: "No session selected",
+      unselectedTitle: "No session selected",
+      noContent: "No session content yet.",
+      noRenderableContent: "No conversation content available.",
+      loading: "Loading.",
+      statusNormal: "Normal",
+      statusStale: "Stale index",
+    },
+    modal: {
+      titleAll: "Confirm delete all sessions",
+      titleSingle: "Confirm delete current session",
+      titleSelected: "Confirm delete selected sessions",
+      subtitle: "Destructive action",
+      summaryHead: "Pending action",
+      warningAll: "This will remove every deletable session file in the current directory. Confirmation is locked until the countdown ends.",
+      warningDelete: "This action cannot be undone. Confirmation is locked until the countdown ends.",
+      descAll: "You are about to delete {{count}} session files, total {{size}}.",
+      descSingle: "You are about to delete the current session \"{{title}}\", total {{size}}.",
+      descSelected: "You are about to delete {{count}} selected sessions, total {{size}}.",
+      confirmCountdown: "{{seconds}}s to confirm",
+    },
+    pagination: {
+      summary: "{{start}}-{{end}} / {{total}}",
+      summaryEmpty: "0 / 0",
+      page: "Page {{current}} / {{total}}",
+      pageEmpty: "Page 0 / 0",
+    },
+    timeline: {
+      user: "User",
+      assistant: "Codex",
+      toolCall: "Tool call",
+      toolOutput: "Tool output",
+      historyInput: "History input #{{index}}",
+    },
+    summary: {
+      staleMissing: "Index exists, but the source session file is missing.",
+      none: "No summary.",
+    },
+    locale: {
+      switchTo: "Switch to Chinese",
+    },
+    theme: {
+      switchToLight: "Switch to light mode",
+      switchToDark: "Switch to dark mode",
+    },
+    errors: {
+      selectCodexRoot: "Please select a .codex directory that contains a sessions folder.",
+      unknown: "An unknown error occurred",
+    },
+  },
+};
+
+const state = {
+  rootHandle: null,
+  sessionsDirHandle: null,
+  sessionRecords: new Map(),
+  historyRecords: new Map(),
+  timelineCache: new Map(),
+  sessions: [],
+  filteredSessions: [],
+  selectedIds: new Set(),
+  activeSessionId: null,
+  lastScannedAt: null,
+  currentPage: 1,
+  pageSize: 10,
+  locale: "zh-CN",
+  themeMode: "light",
+  pendingDeleteMode: null,
+  countdownRemaining: 0,
+  countdownTimer: null,
+  previewRequestId: 0,
+};
+
+const elements = {
+  pickDirectoryButton: document.querySelector("#pick-directory-button"),
+  reloadButton: document.querySelector("#reload-button"),
+  deleteSelectedButton: document.querySelector("#delete-selected-button"),
+  deleteAllButton: document.querySelector("#delete-all-button"),
+  searchInput: document.querySelector("#search-input"),
+  ageFilter: document.querySelector("#age-filter"),
+  sortSelect: document.querySelector("#sort-select"),
+  staleOnlyCheckbox: document.querySelector("#stale-only-checkbox"),
+  selectPageButton: document.querySelector("#select-page-button"),
+  pageSizeSelect: document.querySelector("#page-size-select"),
+  prevPageButton: document.querySelector("#prev-page-button"),
+  nextPageButton: document.querySelector("#next-page-button"),
+  supportHint: document.querySelector("#support-hint"),
+  statusBadge: document.querySelector("#status-badge"),
+  statusText: document.querySelector("#status-text"),
+  statusDirectory: document.querySelector("#status-directory"),
+  statusScannedAt: document.querySelector("#status-scanned-at"),
+  metricTotal: queryAny(["#metric-group-total", "#metric-total"]),
+  metricFiltered: queryAny(["#metric-session-total"]),
+  metricSize: queryAny(["#metric-total-size", "#metric-size"]),
+  metricStale: queryAny(["#metric-stale-count", "#metric-stale"]),
+  metricSelected: queryAny(["#metric-selected-count", "#metric-selected"]),
+  listCaption: document.querySelector("#list-caption"),
+  paginationSummary: document.querySelector("#pagination-summary"),
+  pageIndicator: document.querySelector("#page-indicator"),
+  sessionList: document.querySelector("#session-list"),
+  detailCaption: document.querySelector("#detail-caption"),
+  detailTitle: document.querySelector("#detail-title"),
+  detailOverview: document.querySelector("#detail-overview"),
+  detailPreviewTitle: document.querySelector("#detail-preview-title"),
+  detailPreview: document.querySelector("#detail-preview"),
+  detailMessageCount: document.querySelector("#detail-message-count"),
+  deleteCurrentButton: document.querySelector("#delete-current-button"),
+  template: queryAny(["#session-item-template", "#group-item-template"]),
+  localeToggleButton: document.querySelector("#locale-toggle-button"),
+  themeToggleButton: document.querySelector("#theme-toggle-button"),
+  modal: document.querySelector("#confirm-modal"),
+  modalTitle: document.querySelector("#modal-title"),
+  modalDescription: document.querySelector("#modal-description"),
+  modalWarning: document.querySelector("#modal-warning"),
+  modalCancelButton: document.querySelector("#modal-cancel-button"),
+  modalConfirmButton: document.querySelector("#modal-confirm-button"),
+};
+
+initialize();
+
+function initialize() {
+  const isSupported = "showDirectoryPicker" in window;
+
+  elements.pickDirectoryButton.disabled = !isSupported;
+  elements.pageSizeSelect.value = String(state.pageSize);
+
+  elements.pickDirectoryButton.addEventListener("click", handlePickDirectory);
+  elements.reloadButton.addEventListener("click", () => scanSessions().catch(handleError));
+  elements.deleteSelectedButton.addEventListener("click", () => openDeleteDialog("selected"));
+  elements.deleteAllButton.addEventListener("click", () => openDeleteDialog("all"));
+  elements.searchInput.addEventListener("input", handleFilterChange);
+  elements.ageFilter.addEventListener("change", handleFilterChange);
+  elements.sortSelect.addEventListener("change", handleFilterChange);
+  elements.staleOnlyCheckbox.addEventListener("change", handleFilterChange);
+  elements.selectPageButton.addEventListener("click", handleSelectCurrentPage);
+  elements.pageSizeSelect.addEventListener("change", handlePageSizeChange);
+  elements.prevPageButton.addEventListener("click", () => changePage(-1));
+  elements.nextPageButton.addEventListener("click", () => changePage(1));
+  elements.deleteCurrentButton.addEventListener("click", () => openDeleteDialog("single"));
+  elements.modalCancelButton.addEventListener("click", closeDeleteDialog);
+  elements.modalConfirmButton.addEventListener("click", () => confirmDelete().catch(handleError));
+  elements.localeToggleButton.addEventListener("click", cycleLocale);
+  elements.themeToggleButton.addEventListener("click", cycleTheme);
+
+  applyLocale(getInitialLocale());
+  applyTheme(getInitialThemeMode());
+  renderEmptyList(t("list.unscanned"));
+  renderDetails(null);
+  updateStatus();
+}
+
+async function handlePickDirectory() {
+  try {
+    const rootHandle = await window.showDirectoryPicker({ mode: "readwrite" });
+    state.rootHandle = rootHandle;
+    state.sessionsDirHandle = await rootHandle.getDirectoryHandle("sessions");
+    elements.reloadButton.disabled = false;
+    await scanSessions();
+  } catch (error) {
+    if (error?.name === "AbortError") {
+      return;
+    }
+
+    throw error;
+  }
+}
+
+async function scanSessions() {
+  ensureRootSelected();
+  setLoadingState(t("badge.loading"));
+
+  const [sessionRecords, historyRecords, sessions] = await Promise.all([
+    readSessionIndex(state.rootHandle),
+    readHistoryIndex(state.rootHandle),
+    readSessionFiles(state.sessionsDirHandle),
+  ]);
+
+  state.sessionRecords = sessionRecords;
+  state.historyRecords = historyRecords;
+  state.timelineCache.clear();
+  state.sessions = sessions.map((session) => {
+    const indexed = sessionRecords.get(session.id);
+    const historyPreview = historyRecords.get(session.id) || [];
+
+    return {
+      ...session,
+      title: getSessionTitle(indexed?.thread_name, session.id),
+      updatedAt: indexed?.updated_at || session.updatedAt,
+      historyPreview,
+      previewSummary: historyPreview[0] || "",
+      stale: false,
+    };
+  });
+
+  const existingIds = new Set(state.sessions.map((session) => session.id));
+
+  for (const [id, record] of sessionRecords.entries()) {
+    if (!existingIds.has(id)) {
+      const historyPreview = historyRecords.get(id) || [];
+
+      state.sessions.push({
+        id,
+        title: getSessionTitle(record.thread_name, id),
+        updatedAt: record.updated_at,
+        size: 0,
+        relativePath: "sessions/<missing>",
+        fileHandle: null,
+        parentHandle: null,
+        fileName: null,
+        lastModified: null,
+        stale: true,
+        historyPreview,
+        previewSummary: historyPreview[0] || "",
+      });
+    }
+  }
+
+  state.lastScannedAt = new Date();
+  state.currentPage = 1;
+
+  pruneSelection();
+
+  if (!state.activeSessionId || !state.sessions.some((session) => session.id === state.activeSessionId)) {
+    state.activeSessionId = state.sessions[0]?.id || null;
+  }
+
+  applyFilters();
+}
+
+async function readSessionIndex(rootHandle) {
+  try {
+    const fileHandle = await rootHandle.getFileHandle("session_index.jsonl");
+    const text = await (await fileHandle.getFile()).text();
+    const records = new Map();
+
+    for (const line of splitJsonLines(text)) {
+      const parsed = safeJsonParse(line);
+
+      if (!parsed?.id) {
+        continue;
+      }
+
+      const previous = records.get(parsed.id);
+
+      if (!previous || new Date(parsed.updated_at || 0) >= new Date(previous.updated_at || 0)) {
+        records.set(parsed.id, parsed);
+      }
+    }
+
+    return records;
+  } catch (error) {
+    if (error?.name === "NotFoundError") {
+      return new Map();
+    }
+
+    throw error;
+  }
+}
+
+async function readHistoryIndex(rootHandle) {
+  try {
+    const fileHandle = await rootHandle.getFileHandle("history.jsonl");
+    const text = await (await fileHandle.getFile()).text();
+    const records = new Map();
+
+    for (const line of splitJsonLines(text)) {
+      const parsed = safeJsonParse(line);
+
+      if (!parsed?.session_id || typeof parsed.text !== "string" || !parsed.text.trim()) {
+        continue;
+      }
+
+      const list = records.get(parsed.session_id) || [];
+
+      if (list.length < 3) {
+        list.push(parsed.text.trim());
+        records.set(parsed.session_id, list);
+      }
+    }
+
+    return records;
+  } catch (error) {
+    if (error?.name === "NotFoundError") {
+      return new Map();
+    }
+
+    throw error;
+  }
+}
+
+async function readSessionFiles(directoryHandle) {
+  const sessions = [];
+
+  for await (const entry of walkDirectory(directoryHandle, ["sessions"])) {
+    if (entry.kind !== "file" || !entry.name.endsWith(".jsonl")) {
+      continue;
+    }
+
+    const file = await entry.handle.getFile();
+    const sessionId = extractSessionId(entry.name);
+
+    if (!sessionId) {
+      continue;
+    }
+
+    sessions.push({
+      id: sessionId,
+      size: file.size,
+      updatedAt: file.lastModified ? new Date(file.lastModified).toISOString() : null,
+      relativePath: entry.path.join("/"),
+      fileHandle: entry.handle,
+      parentHandle: entry.parentHandle,
+      fileName: entry.name,
+      lastModified: file.lastModified,
+      stale: false,
+    });
+  }
+
+  return sessions;
+}
+
+async function* walkDirectory(directoryHandle, path = []) {
+  for await (const [name, handle] of directoryHandle.entries()) {
+    const nextPath = [...path, name];
+
+    if (handle.kind === "directory") {
+      yield* walkDirectory(handle, nextPath);
+      continue;
+    }
+
+    yield {
+      kind: handle.kind,
+      name,
+      handle,
+      parentHandle: directoryHandle,
+      path: nextPath,
+    };
+  }
+}
+
+function handleFilterChange() {
+  state.currentPage = 1;
+  applyFilters();
+}
+
+function handlePageSizeChange() {
+  state.pageSize = Number(elements.pageSizeSelect.value) || 10;
+  state.currentPage = 1;
+  renderList();
+  renderDetails(getActiveSession());
+  updateStatus();
+}
+
+function changePage(offset) {
+  const totalPages = getTotalPages();
+
+  if (!totalPages) {
+    return;
+  }
+
+  state.currentPage = Math.min(Math.max(1, state.currentPage + offset), totalPages);
+  renderList();
+  renderDetails(getActiveSession());
+  updateStatus();
+}
+
+function applyFilters() {
+  const query = elements.searchInput.value.trim().toLowerCase();
+  const age = elements.ageFilter.value;
+  const sort = elements.sortSelect.value;
+  const staleOnly = elements.staleOnlyCheckbox.checked;
+  const now = Date.now();
+
+  state.filteredSessions = state.sessions.filter((session) => {
+    if (staleOnly && !session.stale) {
+      return false;
+    }
+
+    if (query) {
+      const haystack = [
+        session.title,
+        session.id,
+        session.relativePath,
+        session.previewSummary,
+        ...session.historyPreview,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
+      if (!haystack.includes(query)) {
+        return false;
+      }
+    }
+
+    if (age !== "all") {
+      const updatedTime = new Date(session.updatedAt || session.lastModified || 0).getTime();
+
+      if (!updatedTime) {
+        return age === "older";
+      }
+
+      const diff = now - updatedTime;
+
+      if (age === "7d" && diff > 7 * 24 * 60 * 60 * 1000) {
+        return false;
+      }
+
+      if (age === "30d" && diff > 30 * 24 * 60 * 60 * 1000) {
+        return false;
+      }
+
+      if (age === "older" && diff <= 30 * 24 * 60 * 60 * 1000) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+
+  state.filteredSessions.sort((left, right) => {
+    if (sort === "size-desc") {
+      return right.size - left.size;
+    }
+
+    if (sort === "title-asc") {
+      return left.title.localeCompare(right.title, state.locale === "zh-CN" ? "zh-CN" : "en");
+    }
+
+    return compareTimeDesc(left.updatedAt || left.lastModified, right.updatedAt || right.lastModified);
+  });
+
+  const totalPages = getTotalPages();
+  state.currentPage = totalPages ? Math.min(state.currentPage, totalPages) : 1;
+
+  if (!state.filteredSessions.some((session) => session.id === state.activeSessionId)) {
+    state.activeSessionId = state.filteredSessions[0]?.id || null;
+  }
+
+  renderList();
+  renderDetails(getActiveSession());
+  updateStatus();
+}
+
+function renderList() {
+  elements.sessionList.innerHTML = "";
+
+  const sessionsOnPage = getPagedSessions();
+
+  if (!sessionsOnPage.length) {
+    renderEmptyList(state.filteredSessions.length ? t("list.pageEmpty") : t("list.noResults"));
+    return;
+  }
+
+  const fragment = document.createDocumentFragment();
+
+  for (const session of sessionsOnPage) {
+    const node = createListItemNode();
+    const checkbox = node.querySelector(".session-checkbox");
+    const button = node.querySelector(".session-main");
+    const title = node.querySelector(".session-title");
+    const size = node.querySelector(".session-size");
+    const id = node.querySelector(".session-id");
+    const updated = node.querySelector(".session-updated");
+    const summary = node.querySelector(".session-summary");
+    const count = node.querySelector(".group-count");
+
+    title.textContent = session.stale ? `${session.title} · ${t("detail.statusStale")}` : session.title;
+    size.textContent = formatBytes(session.size);
+    id.textContent = abbreviateId(session.id);
+    updated.textContent = formatDateTime(session.updatedAt);
+    summary.textContent = buildSessionSummary(session);
+    checkbox.checked = state.selectedIds.has(session.id);
+    checkbox.disabled = !isSessionDeletable(session);
+
+    if (count) {
+      count.hidden = true;
+      count.textContent = "";
+    }
+
+    if (session.id === state.activeSessionId) {
+      node.classList.add("is-active");
+    }
+
+    checkbox.addEventListener("change", (event) => {
+      toggleSelection(session.id, event.target.checked);
+    });
+
+    button.addEventListener("click", () => {
+      state.activeSessionId = session.id;
+      renderList();
+      renderDetails(session);
+      updateStatus();
+    });
+
+    fragment.appendChild(node);
+  }
+
+  elements.sessionList.appendChild(fragment);
+}
+
+function createListItemNode() {
+  const templateNode = elements.template?.content?.firstElementChild;
+
+  if (templateNode) {
+    return templateNode.cloneNode(true);
+  }
+
+  const wrapper = document.createElement("article");
+  wrapper.className = "session-item";
+  wrapper.innerHTML = `
+    <label class="session-select">
+      <input type="checkbox" class="session-checkbox" />
+      <span></span>
+    </label>
+    <button class="session-main" type="button">
+      <div class="session-row">
+        <strong class="session-title"></strong>
+        <span class="session-size"></span>
+      </div>
+      <div class="session-row meta">
+        <span class="session-id"></span>
+        <span class="session-updated"></span>
+      </div>
+      <div class="session-summary"></div>
+    </button>
+  `;
+
+  return wrapper;
+}
+
+function renderDetails(session) {
+  state.previewRequestId += 1;
+
+  if (!session) {
+    elements.detailCaption.textContent = t("detail.unselectedCaption");
+    elements.detailTitle.textContent = t("detail.unselectedTitle");
+    elements.detailOverview.innerHTML = [
+      makeOverviewItem(t("labels.sessionId"), "-"),
+      makeOverviewItem(t("labels.fileSize"), "-"),
+      makeOverviewItem(t("labels.updatedAt"), "-"),
+      makeOverviewItem(t("labels.status"), "-"),
+    ].join("");
+    elements.detailPreviewTitle.textContent = t("section.conversation");
+    setBadgeText(elements.detailMessageCount, "0");
+    elements.detailPreview.innerHTML = `<p class="empty-state">${escapeHtml(t("detail.noContent"))}</p>`;
+    elements.deleteCurrentButton.disabled = true;
+    elements.deleteCurrentButton.textContent = t("buttons.deleteCurrent");
+    return;
+  }
+
+  elements.detailCaption.textContent = session.relativePath || t("statusText.currentSession");
+  elements.detailTitle.textContent = session.title;
+  elements.detailOverview.innerHTML = [
+    makeOverviewItem(t("labels.sessionId"), session.id),
+    makeOverviewItem(t("labels.fileSize"), formatBytes(session.size)),
+    makeOverviewItem(t("labels.updatedAt"), formatDateTime(session.updatedAt)),
+    makeOverviewItem(t("labels.status"), session.stale ? t("detail.statusStale") : t("detail.statusNormal")),
+  ].join("");
+  elements.detailPreviewTitle.textContent = t("section.conversation");
+  elements.deleteCurrentButton.disabled = !isSessionDeletable(session);
+  elements.deleteCurrentButton.textContent = t("buttons.deleteCurrent");
+
+  renderTimeline(session).catch(handleError);
+}
+
+async function renderTimeline(session) {
+  const requestId = ++state.previewRequestId;
+  elements.detailPreview.innerHTML = `<p class="empty-state">${escapeHtml(t("detail.loading"))}</p>`;
+
+  const timeline = await getSessionTimeline(session);
+
+  if (requestId !== state.previewRequestId) {
+    return;
+  }
+
+  setBadgeText(elements.detailMessageCount, String(timeline.length));
+
+  if (!timeline.length) {
+    elements.detailPreview.innerHTML = `<p class="empty-state">${escapeHtml(t("detail.noRenderableContent"))}</p>`;
+    return;
+  }
+
+  elements.detailPreview.innerHTML = timeline.map(renderConversationItem).join("");
+}
+
+async function getSessionTimeline(session) {
+  if (!session.fileHandle || session.stale) {
+    return buildFallbackTimeline(session);
+  }
+
+  if (state.timelineCache.has(session.id)) {
+    return state.timelineCache.get(session.id);
+  }
+
+  const text = await (await session.fileHandle.getFile()).text();
+  const items = [];
+
+  for (const line of splitJsonLines(text)) {
+    const parsed = safeJsonParse(line);
+
+    if (!parsed) {
+      continue;
+    }
+
+    const extractedItems = extractTimelineItems(parsed);
+
+    if (extractedItems.length) {
+      items.push(...extractedItems);
+    }
+  }
+
+  const timeline = items.length ? items : buildFallbackTimeline(session);
+  state.timelineCache.set(session.id, timeline);
+  return timeline;
+}
+
+function extractTimelineItems(record) {
+  if (record.type === "event_msg") {
+    return extractEventMessageItems(record);
+  }
+
+  if (record.type === "response_item") {
+    return extractResponseItems(record);
+  }
+
+  return [];
+}
+
+function extractEventMessageItems(record) {
+  const eventType = record.payload?.type;
+  const timestamp = record.timestamp || record.payload?.timestamp || null;
+
+  if (eventType === "user_message" && record.payload?.message) {
+    return [
+      {
+        kind: "user",
+        roleLabel: t("timeline.user"),
+        timestamp,
+        body: record.payload.message.trim(),
+      },
+    ];
+  }
+
+  if (eventType === "agent_message" && record.payload?.message) {
+    return [
+      {
+        kind: "assistant",
+        roleLabel: t("timeline.assistant"),
+        timestamp,
+        body: record.payload.message.trim(),
+      },
+    ];
+  }
+
+  return [];
+}
+
+function extractResponseItems(record) {
+  const payload = record.payload || {};
+  const timestamp = record.timestamp || payload.timestamp || null;
+
+  if (payload.type === "message" && (payload.role === "user" || payload.role === "assistant")) {
+    const body = extractMessageContent(payload.content);
+
+    if (!body) {
+      return [];
+    }
+
+    return [
+      {
+        kind: payload.role === "user" ? "user" : "assistant",
+        roleLabel: payload.role === "user" ? t("timeline.user") : t("timeline.assistant"),
+        timestamp,
+        body,
+      },
+    ];
+  }
+
+  if (payload.type === "function_call" || payload.type === "custom_tool_call") {
+    const body = summarizeToolInvocation(payload);
+
+    return body
+      ? [
+          {
+            kind: "system",
+            roleLabel: t("timeline.toolCall"),
+            timestamp,
+            body,
+          },
+        ]
+      : [];
+  }
+
+  if (payload.type === "function_call_output" || payload.type === "custom_tool_call_output") {
+    const body = summarizeToolOutput(payload);
+
+    return body
+      ? [
+          {
+            kind: "system",
+            roleLabel: t("timeline.toolOutput"),
+            timestamp,
+            body,
+          },
+        ]
+      : [];
+  }
+
+  return [];
+}
+
+function extractMessageContent(content) {
+  if (!Array.isArray(content)) {
+    return "";
+  }
+
+  return content
+    .map((item) => {
+      if (item.type === "input_text" || item.type === "output_text") {
+        return item.text || "";
+      }
+
+      if (item.type === "text") {
+        return item.text || "";
+      }
+
+      return "";
+    })
+    .map((text) => text.trim())
+    .filter(Boolean)
+    .join("\n\n")
+    .trim();
+}
+
+function summarizeToolInvocation(payload) {
+  const name = payload.name || t("timeline.toolCall");
+  const args = typeof payload.arguments === "string" ? payload.arguments.trim() : "";
+
+  if (!args) {
+    return name;
+  }
+
+  return `${name}\n${truncateText(args, TOOL_OUTPUT_LIMIT)}`;
+}
+
+function summarizeToolOutput(payload) {
+  const output = typeof payload.output === "string" ? payload.output.trim() : "";
+
+  if (!output) {
+    return "";
+  }
+
+  return truncateText(output, TOOL_OUTPUT_LIMIT);
+}
+
+function buildFallbackTimeline(session) {
+  return (session.historyPreview || [])
+    .map((text) => text.trim())
+    .filter(Boolean)
+    .map((body, index) => ({
+      kind: "user",
+      roleLabel: t("timeline.historyInput", { index: index + 1 }),
+      timestamp: null,
+      body,
+    }));
+}
+
+function renderConversationItem(item) {
+  return `
+    <article class="conversation-item ${escapeHtml(item.kind)}">
+      <div class="conversation-meta">
+        <span class="conversation-role">${escapeHtml(item.roleLabel)}</span>
+        <span>${escapeHtml(formatDateTime(item.timestamp))}</span>
+      </div>
+      <div class="conversation-body">${escapeHtml(item.body)}</div>
+    </article>
+  `;
+}
+
+function updateStatus() {
+  const staleCount = state.sessions.filter((session) => session.stale).length;
+  const totalSize = state.sessions.reduce((sum, session) => sum + (session.size || 0), 0);
+  const totalPages = getTotalPages();
+  const deletableCount = state.sessions.filter(isSessionDeletable).length;
+  const startIndex = state.filteredSessions.length ? (state.currentPage - 1) * state.pageSize + 1 : 0;
+  const endIndex = Math.min(state.currentPage * state.pageSize, state.filteredSessions.length);
+
+  setText(elements.metricTotal, state.sessions.length ? String(state.sessions.length) : "-");
+  setText(elements.metricFiltered, state.sessions.length ? String(state.filteredSessions.length) : "-");
+  setText(elements.metricSize, state.sessions.length ? formatBytes(totalSize) : "-");
+  setText(elements.metricStale, String(staleCount));
+  setText(elements.metricSelected, String(state.selectedIds.size));
+  elements.statusDirectory.textContent = state.rootHandle?.name || "-";
+  elements.statusScannedAt.textContent = state.lastScannedAt
+    ? formatDateTime(state.lastScannedAt.toISOString())
+    : "-";
+  elements.statusBadge.textContent = state.rootHandle ? t("badge.connected") : t("badge.disconnected");
+  elements.statusText.textContent = state.rootHandle
+    ? t("statusText.connectedCount", { count: state.sessions.length })
+    : t("statusText.unselectedDir");
+
+  if (!state.filteredSessions.length) {
+    elements.listCaption.textContent = state.rootHandle ? t("list.zeroResults") : t("list.unscanned");
+  } else {
+    elements.listCaption.textContent = t("list.showing", {
+      start: startIndex,
+      end: endIndex,
+      total: state.filteredSessions.length,
+    });
+  }
+
+  elements.paginationSummary.textContent = state.filteredSessions.length
+    ? t("pagination.summary", { start: startIndex, end: endIndex, total: state.filteredSessions.length })
+    : t("pagination.summaryEmpty");
+  elements.pageIndicator.textContent = totalPages
+    ? t("pagination.page", { current: state.currentPage, total: totalPages })
+    : t("pagination.pageEmpty");
+  elements.prevPageButton.disabled = state.currentPage <= 1;
+  elements.nextPageButton.disabled = !totalPages || state.currentPage >= totalPages;
+  elements.deleteSelectedButton.disabled = !state.selectedIds.size;
+  elements.deleteAllButton.disabled = !deletableCount;
+  elements.selectPageButton.disabled = !getPagedSelectableSessions().length;
+  elements.selectPageButton.textContent = areAllPagedSessionsSelected()
+    ? t("buttons.unselectPage")
+    : t("buttons.selectPage");
+}
+
+function renderEmptyList(text) {
+  elements.sessionList.innerHTML = `<p class="empty-state">${escapeHtml(text)}</p>`;
+}
+
+function setLoadingState(text) {
+  elements.statusBadge.textContent = t("badge.loading");
+  elements.statusText.textContent = text;
+  renderEmptyList(text);
+  elements.pageIndicator.textContent = t("pagination.pageEmpty");
+  elements.paginationSummary.textContent = t("pagination.summaryEmpty");
+}
+
+function toggleSelection(id, checked) {
+  if (checked) {
+    state.selectedIds.add(id);
+  } else {
+    state.selectedIds.delete(id);
+  }
+
+  renderList();
+  updateStatus();
+}
+
+function handleSelectCurrentPage() {
+  const currentPageSessions = getPagedSelectableSessions();
+
+  if (!currentPageSessions.length) {
+    return;
+  }
+
+  const shouldSelectAll = !areAllPagedSessionsSelected();
+
+  currentPageSessions.forEach((session) => {
+    if (shouldSelectAll) {
+      state.selectedIds.add(session.id);
+    } else {
+      state.selectedIds.delete(session.id);
+    }
+  });
+
+  renderList();
+  updateStatus();
+}
+
+function openDeleteDialog(mode) {
+  const targets = getDeletionTargets(mode);
+
+  if (!targets.length) {
+    return;
+  }
+
+  state.pendingDeleteMode = mode;
+  elements.modal.hidden = false;
+  refreshDeleteDialogText();
+  elements.modalConfirmButton.textContent = t("buttons.confirmDelete");
+
+  resetCountdown(5);
+}
+
+function refreshDeleteDialogText() {
+  const targets = getDeletionTargets(state.pendingDeleteMode);
+  elements.modalTitle.textContent = getDeleteDialogTitle(state.pendingDeleteMode);
+  elements.modalDescription.textContent = getDeleteDialogDescription(state.pendingDeleteMode, targets);
+  elements.modalWarning.textContent =
+    state.pendingDeleteMode === "all" ? t("modal.warningAll") : t("modal.warningDelete");
+}
+
+function closeDeleteDialog() {
+  clearCountdown();
+  elements.modal.hidden = true;
+  state.pendingDeleteMode = null;
+  elements.modalConfirmButton.disabled = true;
+  elements.modalConfirmButton.textContent = t("buttons.confirmDelete");
+}
+
+function resetCountdown(seconds) {
+  clearCountdown();
+  state.countdownRemaining = seconds;
+  refreshCountdownButton();
+
+  if (!seconds) {
+    elements.modalConfirmButton.disabled = false;
+    return;
+  }
+
+  elements.modalConfirmButton.disabled = true;
+  state.countdownTimer = window.setInterval(() => {
+    state.countdownRemaining -= 1;
+    refreshCountdownButton();
+
+    if (state.countdownRemaining <= 0) {
+      clearCountdown();
+      elements.modalConfirmButton.disabled = false;
+      elements.modalConfirmButton.textContent = t("buttons.confirmDelete");
+    }
+  }, 1000);
+}
+
+function refreshCountdownButton() {
+  if (state.countdownRemaining > 0) {
+    elements.modalConfirmButton.textContent = t("modal.confirmCountdown", { seconds: state.countdownRemaining });
+    return;
+  }
+
+  elements.modalConfirmButton.textContent = t("buttons.confirmDelete");
+}
+
+function clearCountdown() {
+  if (state.countdownTimer) {
+    window.clearInterval(state.countdownTimer);
+    state.countdownTimer = null;
+  }
+}
+
+async function confirmDelete() {
+  const targets = getDeletionTargets(state.pendingDeleteMode);
+
+  if (!targets.length) {
+    closeDeleteDialog();
+    return;
+  }
+
+  for (const session of targets) {
+    await session.parentHandle.removeEntry(session.fileName);
+    state.selectedIds.delete(session.id);
+    state.timelineCache.delete(session.id);
+  }
+
+  closeDeleteDialog();
+  await scanSessions();
+}
+
+function getDeletionTargets(mode) {
+  if (mode === "single") {
+    const active = getActiveSession();
+    return active && isSessionDeletable(active) ? [active] : [];
+  }
+
+  if (mode === "all") {
+    return state.sessions.filter(isSessionDeletable);
+  }
+
+  return state.sessions.filter((session) => state.selectedIds.has(session.id) && isSessionDeletable(session));
+}
+
+function getDeleteDialogTitle(mode) {
+  if (mode === "all") {
+    return t("modal.titleAll");
+  }
+
+  if (mode === "single") {
+    return t("modal.titleSingle");
+  }
+
+  return t("modal.titleSelected");
+}
+
+function getDeleteDialogDescription(mode, targets) {
+  if (mode === "all") {
+    return t("modal.descAll", { count: targets.length, size: formatBytes(sumSizes(targets)) });
+  }
+
+  if (mode === "single") {
+    const active = getActiveSession();
+    return t("modal.descSingle", {
+      title: active?.title || "-",
+      size: formatBytes(sumSizes(targets)),
+    });
+  }
+
+  return t("modal.descSelected", { count: targets.length, size: formatBytes(sumSizes(targets)) });
+}
+
+function getActiveSession() {
+  return state.filteredSessions.find((session) => session.id === state.activeSessionId) || null;
+}
+
+function getPagedSessions() {
+  if (!state.filteredSessions.length) {
+    return [];
+  }
+
+  const start = (state.currentPage - 1) * state.pageSize;
+  return state.filteredSessions.slice(start, start + state.pageSize);
+}
+
+function getPagedSelectableSessions() {
+  return getPagedSessions().filter(isSessionDeletable);
+}
+
+function areAllPagedSessionsSelected() {
+  const currentPageSessions = getPagedSelectableSessions();
+  return currentPageSessions.length > 0 && currentPageSessions.every((session) => state.selectedIds.has(session.id));
+}
+
+function getTotalPages() {
+  return state.filteredSessions.length ? Math.ceil(state.filteredSessions.length / state.pageSize) : 0;
+}
+
+function pruneSelection() {
+  const validIds = new Set(state.sessions.filter(isSessionDeletable).map((session) => session.id));
+
+  state.selectedIds.forEach((id) => {
+    if (!validIds.has(id)) {
+      state.selectedIds.delete(id);
+    }
+  });
+}
+
+function applyLocale(locale) {
+  state.locale = locale;
+  document.documentElement.lang = locale;
+  document.title = t("meta.title");
+  localStorage.setItem(LOCALE_STORAGE_KEY, locale);
+
+  const isSupported = "showDirectoryPicker" in window;
+
+  setText(document.querySelector("#hero-title"), t("meta.heroTitle"));
+  setText(document.querySelector("#hero-description"), t("meta.heroDescription"));
+  setText(elements.supportHint, isSupported ? "" : t("support.unsupported"));
+  setText(document.querySelector("#status-title"), t("section.status"));
+  setText(document.querySelector("#status-directory-label"), t("labels.directory"));
+  setText(document.querySelector("#status-scanned-label"), t("labels.scanned"));
+  setText(document.querySelector("#filter-title"), t("section.filter"));
+  setText(document.querySelector("#search-label"), t("labels.search"));
+  elements.searchInput.placeholder = t("labels.searchPlaceholder");
+  setText(document.querySelector("#age-filter-label"), t("labels.age"));
+  setText(document.querySelector("#sort-label"), t("labels.sort"));
+  setText(document.querySelector("#stale-only-label"), t("labels.staleOnly"));
+  setText(document.querySelector("#age-option-all"), t("filter.all"));
+  setText(document.querySelector("#age-option-7d"), t("filter.last7d"));
+  setText(document.querySelector("#age-option-30d"), t("filter.last30d"));
+  setText(document.querySelector("#age-option-older"), t("filter.older"));
+  setText(document.querySelector("#sort-option-updated"), t("filter.updatedDesc"));
+  setText(document.querySelector("#sort-option-size"), t("filter.sizeDesc"));
+  setText(document.querySelector("#sort-option-title"), t("filter.titleAsc"));
+  setText(document.querySelector("#metrics-title"), t("section.metrics"));
+  setText(document.querySelector("#metric-total-label"), t("labels.totalSessions"));
+  setText(document.querySelector("#metric-filtered-label"), t("labels.filteredResults"));
+  setText(document.querySelector("#metric-size-label"), t("labels.totalSize"));
+  setText(document.querySelector("#metric-stale-label"), t("labels.staleIndexes"));
+  setText(document.querySelector("#metric-selected-label"), t("labels.selected"));
+  setText(document.querySelector("#list-title"), t("section.list"));
+  setText(document.querySelector("#page-size-label"), t("labels.pageSize"));
+  setText(document.querySelector("#detail-section-title"), t("section.detail"));
+  setText(document.querySelector("#detail-overview-default-label"), t("labels.sessionId"));
+  setText(document.querySelector("#modal-subtitle"), t("modal.subtitle"));
+  setText(document.querySelector("#modal-summary-head"), t("modal.summaryHead"));
+  setText(elements.pickDirectoryButton, t("buttons.pickDirectory"));
+  setText(elements.reloadButton, t("buttons.reload"));
+  setText(elements.deleteSelectedButton, t("buttons.deleteSelected"));
+  setText(elements.deleteAllButton, t("buttons.deleteAll"));
+  setText(elements.prevPageButton, t("buttons.prevPage"));
+  setText(elements.nextPageButton, t("buttons.nextPage"));
+  setText(elements.modalCancelButton, t("buttons.cancel"));
+
+  elements.localeToggleButton.textContent = t("buttons.localeIndicator");
+  elements.localeToggleButton.setAttribute("aria-label", t("locale.switchTo"));
+  elements.localeToggleButton.setAttribute("title", t("locale.switchTo"));
+  elements.themeToggleButton.setAttribute("aria-label", getThemeToggleLabel(state.themeMode));
+  elements.themeToggleButton.setAttribute("title", getThemeToggleLabel(state.themeMode));
+
+  if (state.pendingDeleteMode && !elements.modal.hidden) {
+    refreshDeleteDialogText();
+    refreshCountdownButton();
+  }
+}
+
+function cycleLocale() {
+  const nextLocale = state.locale === "zh-CN" ? "en" : "zh-CN";
+  state.timelineCache.clear();
+  applyLocale(nextLocale);
+  renderList();
+  renderDetails(getActiveSession());
+  updateStatus();
+}
+
+function getInitialLocale() {
+  const saved = localStorage.getItem(LOCALE_STORAGE_KEY);
+
+  if (saved === "zh-CN" || saved === "en") {
+    return saved;
+  }
+
+  return navigator.language?.toLowerCase().startsWith("zh") ? "zh-CN" : "en";
+}
+
+function applyTheme(mode) {
+  state.themeMode = mode;
+  document.documentElement.setAttribute("data-theme", mode);
+  localStorage.setItem(THEME_STORAGE_KEY, mode);
+  elements.themeToggleButton.classList.add("is-active");
+  elements.themeToggleButton.innerHTML = `<span class="theme-icon" aria-hidden="true">${getThemeIcon()}</span>`;
+  elements.themeToggleButton.setAttribute("aria-label", getThemeToggleLabel(mode));
+  elements.themeToggleButton.setAttribute("title", getThemeToggleLabel(mode));
+}
+
+function cycleTheme() {
+  const nextMode = state.themeMode === "dark" ? "light" : "dark";
+  applyTheme(nextMode);
+}
+
+function getInitialThemeMode() {
+  const saved = localStorage.getItem(THEME_STORAGE_KEY);
+
+  if (saved === "light" || saved === "dark") {
+    return saved;
+  }
+
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+
+function getThemeToggleLabel(mode) {
+  return mode === "dark" ? t("theme.switchToLight") : t("theme.switchToDark");
+}
+
+function getThemeIcon() {
+  return `
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="12" cy="12" r="4.2"></circle>
+      <path d="M12 2.5v2.6"></path>
+      <path d="M12 18.9v2.6"></path>
+      <path d="M21.5 12h-2.6"></path>
+      <path d="M5.1 12H2.5"></path>
+      <path d="M18.7 5.3l-1.8 1.8"></path>
+      <path d="M7.1 16.9l-1.8 1.8"></path>
+      <path d="M18.7 18.7l-1.8-1.8"></path>
+      <path d="M7.1 7.1L5.3 5.3"></path>
+    </svg>
+  `;
+}
+
+function queryAny(selectors) {
+  for (const selector of selectors) {
+    const node = document.querySelector(selector);
+
+    if (node) {
+      return node;
+    }
+  }
+
+  return null;
+}
+
+function t(key, params = {}) {
+  const localeTable = I18N[state.locale] || I18N["zh-CN"];
+  const fallbackTable = I18N["zh-CN"];
+  const template = resolveMessage(localeTable, key) ?? resolveMessage(fallbackTable, key) ?? key;
+
+  return String(template).replace(/\{\{(\w+)\}\}/g, (_, token) => String(params[token] ?? ""));
+}
+
+function resolveMessage(table, key) {
+  return key.split(".").reduce((current, segment) => current?.[segment], table);
+}
+
+function ensureRootSelected() {
+  if (!state.rootHandle || !state.sessionsDirHandle) {
+    throw new Error(t("errors.selectCodexRoot"));
+  }
+}
+
+function extractSessionId(fileName) {
+  const match = fileName.match(/([0-9a-f]{8,}-[0-9a-f-]{20,})\.jsonl$/i);
+  return match?.[1] || null;
+}
+
+function splitJsonLines(text) {
+  return text
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+}
+
+function safeJsonParse(line) {
+  try {
+    return JSON.parse(line);
+  } catch {
+    return null;
+  }
+}
+
+function isSessionDeletable(session) {
+  return !session.stale && Boolean(session.parentHandle && session.fileName);
+}
+
+function getSessionTitle(rawTitle, fallbackId) {
+  return rawTitle?.trim() || fallbackId;
+}
+
+function buildSessionSummary(session) {
+  if (session.previewSummary) {
+    return session.previewSummary;
+  }
+
+  if (session.stale) {
+    return t("summary.staleMissing");
+  }
+
+  return session.relativePath || t("summary.none");
+}
+
+function truncateText(text, limit) {
+  if (text.length <= limit) {
+    return text;
+  }
+
+  return `${text.slice(0, limit)}...`;
+}
+
+function abbreviateId(id) {
+  return id.length > 18 ? `${id.slice(0, 8)}...${id.slice(-4)}` : id;
+}
+
+function compareTimeDesc(left, right) {
+  return new Date(right || 0).getTime() - new Date(left || 0).getTime();
+}
+
+function sumSizes(items) {
+  return items.reduce((sum, item) => sum + (item.size || 0), 0);
+}
+
+function formatBytes(bytes) {
+  if (!bytes) {
+    return "0 B";
+  }
+
+  const units = ["B", "KB", "MB", "GB"];
+  let value = bytes;
+  let index = 0;
+
+  while (value >= 1024 && index < units.length - 1) {
+    value /= 1024;
+    index += 1;
+  }
+
+  return `${value.toFixed(value >= 10 || index === 0 ? 0 : 1)} ${units[index]}`;
+}
+
+function formatDateTime(value) {
+  if (!value) {
+    return "-";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "-";
+  }
+
+  return new Intl.DateTimeFormat(state.locale, {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+}
+
+function makeOverviewItem(label, value) {
+  return `<div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd></div>`;
+}
+
+function setText(node, value) {
+  if (node) {
+    node.textContent = value;
+  }
+}
+
+function setBadgeText(node, value) {
+  if (node) {
+    node.textContent = value;
+  }
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+function handleError(error) {
+  console.error(error);
+  closeDeleteDialog();
+  state.previewRequestId += 1;
+  const message = error?.message || t("errors.unknown");
+  elements.statusBadge.textContent = t("badge.error");
+  elements.statusText.textContent = message;
+  renderEmptyList(message);
+  elements.detailPreview.innerHTML = `<p class="empty-state">${escapeHtml(message)}</p>`;
+}
+
+    </script>
+  </body>
+</html>

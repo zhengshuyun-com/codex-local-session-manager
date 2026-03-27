@@ -144,6 +144,7 @@ p {
 
 .shell {
   display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
   gap: 12px;
   min-height: calc(100dvh - 32px);
 }
@@ -687,10 +688,30 @@ dd {
   border-top: 1px solid var(--border);
 }
 
-@media (min-width: 1041px) {
-  .bottom-panels {
-    height: calc(100dvh - 160px);
-    min-height: calc(100dvh - 160px);
+@media (min-width: 1041px) and (min-height: 760px) {
+  body {
+    height: 100dvh;
+    overflow: hidden;
+  }
+
+  .shell {
+    height: calc(100dvh - 32px);
+    min-height: calc(100dvh - 32px);
+  }
+
+  .workspace {
+    overflow: hidden;
+  }
+}
+
+@media (min-width: 1041px) and (max-height: 759px) {
+  body {
+    overflow-y: auto;
+  }
+
+  .shell {
+    min-height: calc(100dvh - 32px);
+    height: auto;
   }
 }
 

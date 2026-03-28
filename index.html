@@ -213,7 +213,7 @@ p {
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow);
-  backdrop-filter: blur(14px);
+  backdrop-filter: blur(8px);
 }
 
 .hero {
@@ -288,8 +288,8 @@ h1 {
 
 .bottom-panels {
   display: grid;
-  grid-template-columns: minmax(0, 1.06fr) minmax(340px, 0.84fr);
-  gap: 12px;
+  grid-template-columns: minmax(280px, 0.84fr) minmax(0, 1.32fr);
+  gap: 14px;
   min-height: 0;
 }
 
@@ -801,6 +801,9 @@ dd {
   min-height: 0;
   overflow-y: auto;
   padding-right: 4px;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  contain: layout paint;
   scrollbar-gutter: stable;
   scrollbar-width: thin;
   scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
@@ -832,7 +835,7 @@ dd {
 .detail-scroll {
   display: grid;
   align-content: start;
-  gap: 14px;
+  gap: 16px;
 }
 
 .session-list,
@@ -855,6 +858,9 @@ dd {
   border: 1px solid var(--border);
   background: var(--surface-soft);
   padding: 8px;
+  content-visibility: auto;
+  contain: layout paint style;
+  contain-intrinsic-size: 116px;
   transition:
     border-color 180ms ease,
     background-color 180ms ease,
@@ -880,6 +886,7 @@ dd {
   background: transparent;
   color: inherit;
   text-align: left;
+  min-width: 0;
 }
 
 .group-pills {
@@ -992,6 +999,12 @@ dd {
   .workspace {
     overflow: hidden;
   }
+
+  .list-surface,
+  .detail-surface {
+    background: var(--surface-strong);
+    backdrop-filter: none;
+  }
 }
 
 @media (min-width: 1041px) and (max-height: 759px) {
@@ -1036,6 +1049,10 @@ dd {
   gap: 10px;
 }
 
+#detail-overview {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .preview-item,
 .empty-state {
   border-radius: var(--radius-lg);
@@ -1044,25 +1061,57 @@ dd {
   padding: 12px 14px;
 }
 
+.conversation-stream {
+  gap: 14px;
+}
+
 .conversation-item {
+  position: relative;
+  max-width: min(100%, 58rem);
   border-radius: var(--radius-lg);
   border: 1px solid var(--border);
   background: var(--surface-soft);
-  padding: 12px 14px;
+  padding: 14px 16px 14px 22px;
   display: grid;
-  gap: 8px;
+  gap: 10px;
+  content-visibility: auto;
+  contain: layout paint style;
+  contain-intrinsic-size: 180px;
+}
+
+.conversation-item::before {
+  content: "";
+  position: absolute;
+  top: 14px;
+  bottom: 14px;
+  left: 10px;
+  width: 4px;
+  border-radius: 999px;
+  background: transparent;
 }
 
 .conversation-item.user {
-  border-color: color-mix(in srgb, var(--accent), transparent 78%);
+  margin-left: clamp(20px, 6vw, 92px);
+  background: color-mix(in srgb, var(--info-soft), var(--surface-strong) 34%);
+  border-color: color-mix(in srgb, var(--info), transparent 72%);
 }
 
 .conversation-item.assistant {
-  border-color: var(--border-strong);
+  margin-right: clamp(16px, 4vw, 64px);
+  background: color-mix(in srgb, var(--surface-strong), var(--bg-elevated) 16%);
+  border-color: color-mix(in srgb, var(--accent), transparent 82%);
 }
 
 .conversation-item.system {
   background: color-mix(in srgb, var(--surface-soft), transparent 15%);
+}
+
+.conversation-item.user::before {
+  background: var(--info);
+}
+
+.conversation-item.assistant::before {
+  background: color-mix(in srgb, var(--accent), transparent 18%);
 }
 
 .conversation-meta {
@@ -1087,9 +1136,22 @@ dd {
   font-size: 0.76rem;
 }
 
+.conversation-item.user .conversation-role {
+  background: color-mix(in srgb, var(--info-soft), var(--surface-strong) 18%);
+  border-color: color-mix(in srgb, var(--info), transparent 68%);
+  color: color-mix(in srgb, var(--info), var(--text) 18%);
+}
+
+.conversation-item.assistant .conversation-role {
+  background: color-mix(in srgb, var(--surface-strong), var(--bg-elevated) 10%);
+  border-color: color-mix(in srgb, var(--accent), transparent 82%);
+  color: var(--text);
+}
+
 .conversation-body {
   color: var(--text);
-  line-height: 1.55;
+  line-height: 1.7;
+  font-size: 0.95rem;
   white-space: pre-wrap;
   word-break: break-word;
 }
@@ -1336,7 +1398,7 @@ dd {
   }
 
   .bottom-panels {
-    grid-template-columns: minmax(0, 1fr) minmax(320px, 0.92fr);
+    grid-template-columns: minmax(280px, 0.76fr) minmax(0, 1.24fr);
   }
 }
 
@@ -1426,6 +1488,16 @@ dd {
     justify-content: space-between;
     width: 100%;
     padding-left: 0;
+  }
+
+  #detail-overview {
+    grid-template-columns: 1fr;
+  }
+
+  .conversation-item.user,
+  .conversation-item.assistant {
+    margin-left: 0;
+    margin-right: 0;
   }
 }
 
@@ -1781,7 +1853,6 @@ dd {
 const THEME_STORAGE_KEY = "codex-session-console-theme";
 const LOCALE_STORAGE_KEY = "codex-session-console-locale";
 const REPOSITORY_URL = "https://github.com/zhengshuyun-com/codex-local-session-manager";
-const TOOL_OUTPUT_LIMIT = 600;
 
 const I18N = {
   "zh-CN": {
@@ -2310,15 +2381,16 @@ async function readHistoryIndex(rootHandle) {
 
     for (const line of splitJsonLines(text)) {
       const parsed = safeJsonParse(line);
+      const cleanedText = sanitizeConversationBody(parsed?.text, "user");
 
-      if (!parsed?.session_id || typeof parsed.text !== "string" || !parsed.text.trim()) {
+      if (!parsed?.session_id || !cleanedText) {
         continue;
       }
 
       const list = records.get(parsed.session_id) || [];
 
       if (list.length < 3) {
-        list.push(parsed.text.trim());
+        list.push(cleanedText);
         records.set(parsed.session_id, list);
       }
     }
@@ -2697,7 +2769,9 @@ async function getSessionTimeline(session) {
     }
   }
 
-  const timeline = items.length ? dedupePreviewTimeline(items).map(stripTimelineMeta) : buildFallbackTimeline(session);
+  const timeline = items.length
+    ? dedupePreviewTimeline(items).map(stripTimelineMeta).filter(isRenderableTimelineItem)
+    : buildFallbackTimeline(session);
   state.timelineCache.set(session.id, timeline);
   return timeline;
 }
@@ -2823,23 +2897,35 @@ function extractEventMessageItems(record) {
   const timestamp = record.timestamp || record.payload?.timestamp || null;
 
   if (eventType === "user_message" && record.payload?.message) {
+    const body = sanitizeConversationBody(record.payload.message, "user");
+
+    if (!body) {
+      return [];
+    }
+
     return [
       {
         kind: "user",
         roleLabel: t("timeline.user"),
         timestamp,
-        body: record.payload.message.trim(),
+        body,
       },
     ];
   }
 
   if (eventType === "agent_message" && record.payload?.message) {
+    const body = sanitizeConversationBody(record.payload.message, "assistant");
+
+    if (!body) {
+      return [];
+    }
+
     return [
       {
         kind: "assistant",
         roleLabel: t("timeline.assistant"),
         timestamp,
-        body: record.payload.message.trim(),
+        body,
       },
     ];
   }
@@ -2852,7 +2938,7 @@ function extractResponseItems(record) {
   const timestamp = record.timestamp || payload.timestamp || null;
 
   if (payload.type === "message" && (payload.role === "user" || payload.role === "assistant")) {
-    const body = extractMessageContent(payload.content);
+    const body = extractMessageContent(payload.content, payload.role);
 
     if (!body) {
       return [];
@@ -2868,45 +2954,15 @@ function extractResponseItems(record) {
     ];
   }
 
-  if (payload.type === "function_call" || payload.type === "custom_tool_call") {
-    const body = summarizeToolInvocation(payload);
-
-    return body
-      ? [
-          {
-            kind: "system",
-            roleLabel: t("timeline.toolCall"),
-            timestamp,
-            body,
-          },
-        ]
-      : [];
-  }
-
-  if (payload.type === "function_call_output" || payload.type === "custom_tool_call_output") {
-    const body = summarizeToolOutput(payload);
-
-    return body
-      ? [
-          {
-            kind: "system",
-            roleLabel: t("timeline.toolOutput"),
-            timestamp,
-            body,
-          },
-        ]
-      : [];
-  }
-
   return [];
 }
 
-function extractMessageContent(content) {
+function extractMessageContent(content, role = "") {
   if (!Array.isArray(content)) {
     return "";
   }
 
-  return content
+  const text = content
     .map((item) => {
       if (item.type === "input_text" || item.type === "output_text") {
         return item.text || "";
@@ -2922,32 +2978,13 @@ function extractMessageContent(content) {
     .filter(Boolean)
     .join("\n\n")
     .trim();
-}
 
-function summarizeToolInvocation(payload) {
-  const name = payload.name || t("timeline.toolCall");
-  const args = typeof payload.arguments === "string" ? payload.arguments.trim() : "";
-
-  if (!args) {
-    return name;
-  }
-
-  return `${name}\n${truncateText(args, TOOL_OUTPUT_LIMIT)}`;
-}
-
-function summarizeToolOutput(payload) {
-  const output = typeof payload.output === "string" ? payload.output.trim() : "";
-
-  if (!output) {
-    return "";
-  }
-
-  return truncateText(output, TOOL_OUTPUT_LIMIT);
+  return sanitizeConversationBody(text, role);
 }
 
 function buildFallbackTimeline(session) {
   return (session.historyPreview || [])
-    .map((text) => text.trim())
+    .map((text) => sanitizeConversationBody(text, "user"))
     .filter(Boolean)
     .map((body, index) => ({
       kind: "user",
@@ -2967,6 +3004,56 @@ function renderConversationItem(item) {
       <div class="conversation-body">${escapeHtml(item.body)}</div>
     </article>
   `;
+}
+
+function isRenderableTimelineItem(item) {
+  return (item.kind === "user" || item.kind === "assistant") && Boolean(item.body?.trim());
+}
+
+function sanitizeConversationBody(body, kind) {
+  const normalized = String(body || "").replace(/\r\n/g, "\n").trim();
+
+  if (!normalized) {
+    return "";
+  }
+
+  if (kind !== "user") {
+    return normalized;
+  }
+
+  const stripped = stripInjectedPromptMetadata(normalized);
+  return stripped === normalized ? normalized : stripped;
+}
+
+function stripInjectedPromptMetadata(text) {
+  const leadingBlockPatterns = [
+    /^# AGENTS\.md instructions for[^\n]*\n*/i,
+    /^<INSTRUCTIONS>[\s\S]*?<\/INSTRUCTIONS>\s*/i,
+    /^<environment_context>[\s\S]*?<\/environment_context>\s*/i,
+    /^<permissions instructions>[\s\S]*?<\/permissions instructions>\s*/i,
+    /^<collaboration_mode>[\s\S]*?<\/collaboration_mode>\s*/i,
+    /^<apps_instructions>[\s\S]*?<\/apps_instructions>\s*/i,
+    /^<skills_instructions>[\s\S]*?<\/skills_instructions>\s*/i,
+    /^<plugins_instructions>[\s\S]*?<\/plugins_instructions>\s*/i,
+  ];
+
+  let cleaned = text.trim();
+  let changed = true;
+
+  while (changed && cleaned) {
+    changed = false;
+
+    for (const pattern of leadingBlockPatterns) {
+      const next = cleaned.replace(pattern, "").trimStart();
+
+      if (next !== cleaned) {
+        cleaned = next;
+        changed = true;
+      }
+    }
+  }
+
+  return cleaned.trim();
 }
 
 function updateStatus() {
@@ -3610,14 +3697,6 @@ function buildSessionSummary(session) {
   }
 
   return session.relativePath || t("summary.none");
-}
-
-function truncateText(text, limit) {
-  if (text.length <= limit) {
-    return text;
-  }
-
-  return `${text.slice(0, limit)}...`;
 }
 
 function abbreviateId(id) {

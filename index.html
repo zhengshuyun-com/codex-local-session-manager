@@ -1049,6 +1049,21 @@ dd {
   gap: 10px;
 }
 
+.detail-head-stack {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.detail-inline-toggle {
+  justify-self: end;
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-soft);
+}
+
 #detail-overview {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
@@ -1063,6 +1078,99 @@ dd {
 
 .conversation-stream {
   gap: 14px;
+}
+
+.question-outline {
+  display: grid;
+  gap: 8px;
+  max-height: 220px;
+  overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+.question-outline::-webkit-scrollbar {
+  width: 10px;
+}
+
+.question-outline::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+  border-radius: 999px;
+}
+
+.question-outline::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 999px;
+  border: 2px solid var(--scrollbar-track);
+}
+
+.question-outline::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+.outline-link {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-soft);
+  color: var(--text);
+  padding: 10px 12px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  text-align: left;
+  transition:
+    border-color 180ms ease,
+    background-color 180ms ease,
+    transform 180ms ease;
+}
+
+.outline-link:hover,
+.outline-link:focus-visible {
+  transform: translateY(-1px);
+  border-color: var(--border-strong);
+  background: var(--surface-strong);
+}
+
+.outline-link:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--accent), transparent 52%);
+  outline-offset: 2px;
+}
+
+.outline-index {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface-strong);
+  color: var(--text-soft);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.outline-copy {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.outline-title {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  line-height: 1.45;
+}
+
+.outline-meta {
+  color: var(--text-faint);
+  font-size: 0.78rem;
 }
 
 .conversation-item {
@@ -1102,6 +1210,12 @@ dd {
   border-color: color-mix(in srgb, var(--accent), transparent 82%);
 }
 
+.conversation-item.reasoning {
+  margin-inline: clamp(14px, 4vw, 72px);
+  background: color-mix(in srgb, var(--warning-soft), var(--surface-strong) 32%);
+  border-color: color-mix(in srgb, var(--warning), transparent 70%);
+}
+
 .conversation-item.system {
   background: color-mix(in srgb, var(--surface-soft), transparent 15%);
 }
@@ -1112,6 +1226,10 @@ dd {
 
 .conversation-item.assistant::before {
   background: color-mix(in srgb, var(--accent), transparent 18%);
+}
+
+.conversation-item.reasoning::before {
+  background: var(--warning);
 }
 
 .conversation-meta {
@@ -1148,12 +1266,24 @@ dd {
   color: var(--text);
 }
 
+.conversation-item.reasoning .conversation-role {
+  background: color-mix(in srgb, var(--warning-soft), var(--surface-strong) 14%);
+  border-color: color-mix(in srgb, var(--warning), transparent 68%);
+  color: color-mix(in srgb, var(--warning), var(--text) 24%);
+}
+
 .conversation-body {
   color: var(--text);
   line-height: 1.7;
   font-size: 0.95rem;
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+.conversation-item.is-targeted {
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, var(--info), transparent 68%),
+    var(--shadow);
 }
 
 .conversation-divider {
@@ -1495,7 +1625,8 @@ dd {
   }
 
   .conversation-item.user,
-  .conversation-item.assistant {
+  .conversation-item.assistant,
+  .conversation-item.reasoning {
     margin-left: 0;
     margin-right: 0;
   }
@@ -1718,24 +1849,42 @@ dd {
             </div>
           </div>
 
-          <div class="detail-scroll">
-            <div class="detail-block">
-              <dl id="detail-overview" class="meta-grid">
-                <div>
-                  <dt id="detail-overview-default-label">会话 ID</dt>
-                  <dd>-</dd>
-                </div>
-              </dl>
-            </div>
+	          <div class="detail-scroll">
+	            <div class="detail-block">
+	              <dl id="detail-overview" class="meta-grid">
+	                <div>
+	                  <dt id="detail-overview-default-label">会话 ID</dt>
+	                  <dd>-</dd>
+	                </div>
+	              </dl>
+	            </div>
 
-            <div class="detail-block">
-              <div class="section-head compact">
-                <h2 id="detail-preview-title" class="section-title">完整对话</h2>
-                <span id="detail-message-count" class="badge">0</span>
-              </div>
-              <div id="detail-preview" class="conversation-stream">
-                <p class="empty-state">暂无会话内容.</p>
-              </div>
+	            <div class="detail-block">
+	              <div class="section-head compact">
+	                <div class="detail-head-stack">
+	                  <h2 id="detail-outline-title" class="section-title">问题目录</h2>
+	                  <span id="detail-outline-count" class="badge">0</span>
+	                </div>
+	              </div>
+	              <div id="detail-outline" class="question-outline">
+	                <p class="empty-state">暂无用户提问.</p>
+	              </div>
+	            </div>
+
+	            <div class="detail-block">
+	              <div class="section-head compact">
+	                <div class="detail-head-stack">
+	                  <h2 id="detail-preview-title" class="section-title">完整对话</h2>
+	                  <span id="detail-message-count" class="badge">0</span>
+	                </div>
+	                <label class="checkbox-row detail-inline-toggle">
+	                  <input id="reasoning-toggle" type="checkbox" />
+	                  <span id="reasoning-toggle-label">显示思考摘要</span>
+	                </label>
+	              </div>
+	              <div id="detail-preview" class="conversation-stream">
+	                <p class="empty-state">暂无会话内容.</p>
+	              </div>
             </div>
 
             <div class="detail-block legacy-session-block" hidden aria-hidden="true">
@@ -1852,6 +2001,7 @@ dd {
     <script type="module">
 const THEME_STORAGE_KEY = "codex-session-console-theme";
 const LOCALE_STORAGE_KEY = "codex-session-console-locale";
+const REASONING_VISIBILITY_STORAGE_KEY = "codex-session-console-show-reasoning";
 const REPOSITORY_URL = "https://github.com/zhengshuyun-com/codex-local-session-manager";
 
 const I18N = {
@@ -1870,6 +2020,7 @@ const I18N = {
       metrics: "统计",
       list: "会话列表",
       detail: "详情",
+      questions: "问题目录",
       conversation: "完整对话",
     },
     labels: {
@@ -1942,10 +2093,12 @@ const I18N = {
       unselectedCaption: "未选择会话",
       unselectedTitle: "未选择会话",
       noContent: "暂无会话内容.",
+      noQuestions: "暂无用户提问.",
       noRenderableContent: "没有可展示的会话内容.",
       loading: "加载中.",
       statusNormal: "正常",
       statusStale: "脏索引",
+      showReasoning: "显示思考摘要",
     },
     modal: {
       titleAll: "确认删除全部会话",
@@ -1984,6 +2137,7 @@ const I18N = {
     timeline: {
       user: "用户",
       assistant: "Codex",
+      reasoning: "思考摘要",
       toolCall: "工具调用",
       toolOutput: "工具输出",
       historyInput: "历史输入 #{{index}}",
@@ -2019,6 +2173,7 @@ const I18N = {
       metrics: "Stats",
       list: "Sessions",
       detail: "Details",
+      questions: "Question Outline",
       conversation: "Conversation",
     },
     labels: {
@@ -2091,10 +2246,12 @@ const I18N = {
       unselectedCaption: "No session selected",
       unselectedTitle: "No session selected",
       noContent: "No session content yet.",
+      noQuestions: "No user questions yet.",
       noRenderableContent: "No conversation content available.",
       loading: "Loading.",
       statusNormal: "Normal",
       statusStale: "Stale index",
+      showReasoning: "Show reasoning summaries",
     },
     modal: {
       titleAll: "Confirm delete all sessions",
@@ -2134,6 +2291,7 @@ const I18N = {
     timeline: {
       user: "User",
       assistant: "Codex",
+      reasoning: "Reasoning Summary",
       toolCall: "Tool call",
       toolOutput: "Tool output",
       historyInput: "History input #{{index}}",
@@ -2171,11 +2329,13 @@ const state = {
   pageSize: 10,
   locale: "zh-CN",
   themeMode: "light",
+  showReasoning: false,
   modalKind: null,
   pendingActionMode: null,
   countdownRemaining: 0,
   countdownTimer: null,
   previewRequestId: 0,
+  activeHighlightTimer: null,
 };
 
 const elements = {
@@ -2207,9 +2367,14 @@ const elements = {
   sessionList: document.querySelector("#session-list"),
   detailCaption: document.querySelector("#detail-caption"),
   detailOverview: document.querySelector("#detail-overview"),
+  detailOutlineTitle: document.querySelector("#detail-outline-title"),
+  detailOutline: document.querySelector("#detail-outline"),
+  detailOutlineCount: document.querySelector("#detail-outline-count"),
   detailPreviewTitle: document.querySelector("#detail-preview-title"),
   detailPreview: document.querySelector("#detail-preview"),
   detailMessageCount: document.querySelector("#detail-message-count"),
+  reasoningToggle: document.querySelector("#reasoning-toggle"),
+  reasoningToggleLabel: document.querySelector("#reasoning-toggle-label"),
   downloadCurrentButton: document.querySelector("#download-current-button"),
   deleteCurrentButton: document.querySelector("#delete-current-button"),
   repoLink: document.querySelector("#repo-link"),
@@ -2250,6 +2415,8 @@ function initialize() {
   elements.pageSizeSelect.addEventListener("change", handlePageSizeChange);
   elements.prevPageButton.addEventListener("click", () => changePage(-1));
   elements.nextPageButton.addEventListener("click", () => changePage(1));
+  elements.detailOutline.addEventListener("click", handleOutlineJump);
+  elements.reasoningToggle.addEventListener("change", handleReasoningToggleChange);
   elements.downloadCurrentButton.addEventListener("click", () => downloadCurrentSession().catch(handleError));
   elements.deleteCurrentButton.addEventListener("click", () => openConfirmDialog("single"));
   elements.modalBackdrop.addEventListener("click", handleModalDismiss);
@@ -2260,6 +2427,7 @@ function initialize() {
 
   applyLocale(getInitialLocale());
   applyTheme(getInitialThemeMode());
+  applyReasoningVisibility(getInitialReasoningVisibility(), { rerender: false });
   renderEmptyList(t("list.unscanned"));
   renderDetails(null);
   updateStatus();
@@ -2481,6 +2649,33 @@ function changePage(offset) {
   updateStatus();
 }
 
+function handleReasoningToggleChange() {
+  applyReasoningVisibility(elements.reasoningToggle.checked);
+}
+
+function applyReasoningVisibility(visible, { rerender = true } = {}) {
+  state.showReasoning = Boolean(visible);
+  localStorage.setItem(REASONING_VISIBILITY_STORAGE_KEY, state.showReasoning ? "1" : "0");
+  elements.reasoningToggle.checked = state.showReasoning;
+
+  if (!rerender) {
+    return;
+  }
+
+  const activeSession = getActiveSession();
+
+  if (!activeSession) {
+    renderDetails(null);
+    return;
+  }
+
+  renderTimelinePanels(activeSession).catch(handleError);
+}
+
+function getInitialReasoningVisibility() {
+  return localStorage.getItem(REASONING_VISIBILITY_STORAGE_KEY) === "1";
+}
+
 function applyFilters() {
   const query = elements.searchInput.value.trim().toLowerCase();
   const age = elements.ageFilter.value;
@@ -2616,6 +2811,50 @@ function renderList() {
   elements.sessionList.appendChild(fragment);
 }
 
+function handleOutlineJump(event) {
+  const button = event.target.closest("[data-anchor-id]");
+
+  if (!button) {
+    return;
+  }
+
+  jumpToTimelineAnchor(button.dataset.anchorId || "");
+}
+
+function jumpToTimelineAnchor(anchorId) {
+  if (!anchorId) {
+    return;
+  }
+
+  const target = document.getElementById(anchorId);
+
+  if (!target || !elements.detailPreview.contains(target)) {
+    return;
+  }
+
+  target.scrollIntoView({
+    behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+    block: "center",
+    inline: "nearest",
+  });
+
+  clearActiveConversationTarget();
+  target.classList.add("is-targeted");
+  state.activeHighlightTimer = window.setTimeout(() => {
+    target.classList.remove("is-targeted");
+    state.activeHighlightTimer = null;
+  }, 1800);
+}
+
+function clearActiveConversationTarget() {
+  if (state.activeHighlightTimer) {
+    window.clearTimeout(state.activeHighlightTimer);
+    state.activeHighlightTimer = null;
+  }
+
+  elements.detailPreview.querySelector(".conversation-item.is-targeted")?.classList.remove("is-targeted");
+}
+
 function createListItemNode() {
   const templateNode = elements.template?.content?.firstElementChild;
 
@@ -2648,6 +2887,7 @@ function createListItemNode() {
 
 function renderDetails(session) {
   state.previewRequestId += 1;
+  clearActiveConversationTarget();
 
   if (!session) {
     elements.detailCaption.textContent = t("detail.unselectedCaption");
@@ -2657,9 +2897,13 @@ function renderDetails(session) {
       makeOverviewItem(t("labels.updatedAt"), "-"),
       makeOverviewItem(t("labels.status"), "-"),
     ].join("");
+    elements.detailOutlineTitle.textContent = t("section.questions");
+    setBadgeText(elements.detailOutlineCount, "0");
+    elements.detailOutline.innerHTML = `<p class="empty-state">${escapeHtml(t("detail.noQuestions"))}</p>`;
     elements.detailPreviewTitle.textContent = t("section.conversation");
     setBadgeText(elements.detailMessageCount, "0");
     elements.detailPreview.innerHTML = `<p class="empty-state">${escapeHtml(t("detail.noContent"))}</p>`;
+    elements.reasoningToggle.disabled = true;
     elements.downloadCurrentButton.disabled = true;
     elements.downloadCurrentButton.textContent = t("buttons.download");
     elements.deleteCurrentButton.disabled = true;
@@ -2674,13 +2918,15 @@ function renderDetails(session) {
     makeOverviewItem(t("labels.updatedAt"), formatDateTime(session.updatedAt)),
     makeOverviewItem(t("labels.status"), session.stale ? t("detail.statusStale") : t("detail.statusNormal")),
   ].join("");
+  elements.detailOutlineTitle.textContent = t("section.questions");
   elements.detailPreviewTitle.textContent = t("section.conversation");
+  elements.reasoningToggle.disabled = false;
   elements.downloadCurrentButton.disabled = !isSessionDownloadable(session);
   elements.downloadCurrentButton.textContent = t("buttons.download");
   elements.deleteCurrentButton.disabled = !isSessionDeletable(session);
   elements.deleteCurrentButton.textContent = t("buttons.delete");
 
-  renderTimeline(session).catch(handleError);
+  renderTimelinePanels(session).catch(handleError);
 }
 
 async function downloadCurrentSession() {
@@ -2705,8 +2951,10 @@ async function downloadCurrentSession() {
   }, 0);
 }
 
-async function renderTimeline(session) {
+async function renderTimelinePanels(session) {
   const requestId = ++state.previewRequestId;
+  clearActiveConversationTarget();
+  elements.detailOutline.innerHTML = `<p class="empty-state">${escapeHtml(t("detail.loading"))}</p>`;
   elements.detailPreview.innerHTML = `<p class="empty-state">${escapeHtml(t("detail.loading"))}</p>`;
 
   const timeline = await getSessionTimeline(session);
@@ -2715,14 +2963,17 @@ async function renderTimeline(session) {
     return;
   }
 
-  setBadgeText(elements.detailMessageCount, String(timeline.length));
+  renderQuestionOutline(timeline);
 
-  if (!timeline.length) {
+  const visibleTimeline = getVisibleTimelineItems(timeline);
+  setBadgeText(elements.detailMessageCount, String(visibleTimeline.length));
+
+  if (!visibleTimeline.length) {
     elements.detailPreview.innerHTML = `<p class="empty-state">${escapeHtml(t("detail.noRenderableContent"))}</p>`;
     return;
   }
 
-  elements.detailPreview.innerHTML = timeline.map(renderConversationItem).join("");
+  elements.detailPreview.innerHTML = visibleTimeline.map(renderConversationItem).join("");
 }
 
 async function getSessionTimeline(session) {
@@ -2769,9 +3020,11 @@ async function getSessionTimeline(session) {
     }
   }
 
-  const timeline = items.length
-    ? dedupePreviewTimeline(items).map(stripTimelineMeta).filter(isRenderableTimelineItem)
-    : buildFallbackTimeline(session);
+  const timeline = finalizeTimeline(
+    (items.length ? dedupePreviewTimeline(items).map(stripTimelineMeta) : buildFallbackTimeline(session)).filter(
+      isRenderableTimelineItem,
+    ),
+  );
   state.timelineCache.set(session.id, timeline);
   return timeline;
 }
@@ -2954,6 +3207,21 @@ function extractResponseItems(record) {
     ];
   }
 
+  if (payload.type === "reasoning") {
+    const body = extractReasoningSummary(payload);
+
+    return body
+      ? [
+          {
+            kind: "reasoning",
+            roleLabel: t("timeline.reasoning"),
+            timestamp,
+            body,
+          },
+        ]
+      : [];
+  }
+
   return [];
 }
 
@@ -2982,6 +3250,39 @@ function extractMessageContent(content, role = "") {
   return sanitizeConversationBody(text, role);
 }
 
+function extractReasoningSummary(payload) {
+  const summary = Array.isArray(payload.summary) ? payload.summary : [];
+  const summaryText = summary
+    .map((item) => {
+      if (item?.type === "summary_text") {
+        return item.text || "";
+      }
+
+      return typeof item === "string" ? item : "";
+    })
+    .map((text) => normalizeReasoningSummaryText(text))
+    .filter(Boolean)
+    .join("\n\n")
+    .trim();
+
+  if (summaryText) {
+    return summaryText;
+  }
+
+  if (Array.isArray(payload.content)) {
+    return normalizeReasoningSummaryText(extractMessageContent(payload.content, "assistant"));
+  }
+
+  return "";
+}
+
+function normalizeReasoningSummaryText(text) {
+  return String(text || "")
+    .replace(/\*\*(.*?)\*\*/g, "$1")
+    .replace(/__(.*?)__/g, "$1")
+    .trim();
+}
+
 function buildFallbackTimeline(session) {
   return (session.historyPreview || [])
     .map((text) => sanitizeConversationBody(text, "user"))
@@ -2996,7 +3297,7 @@ function buildFallbackTimeline(session) {
 
 function renderConversationItem(item) {
   return `
-    <article class="conversation-item ${escapeHtml(item.kind)}">
+    <article id="${escapeHtml(item.anchorId)}" class="conversation-item ${escapeHtml(item.kind)}">
       <div class="conversation-meta">
         <span class="conversation-role">${escapeHtml(item.roleLabel)}</span>
         <span>${escapeHtml(formatDateTime(item.timestamp))}</span>
@@ -3006,8 +3307,63 @@ function renderConversationItem(item) {
   `;
 }
 
+function renderQuestionOutline(timeline) {
+  const questions = timeline.filter((item) => item.kind === "user");
+  setBadgeText(elements.detailOutlineCount, String(questions.length));
+
+  if (!questions.length) {
+    elements.detailOutline.innerHTML = `<p class="empty-state">${escapeHtml(t("detail.noQuestions"))}</p>`;
+    return;
+  }
+
+  elements.detailOutline.innerHTML = questions.map(renderQuestionOutlineItem).join("");
+}
+
+function renderQuestionOutlineItem(item) {
+  return `
+    <button class="outline-link" type="button" data-anchor-id="${escapeHtml(item.anchorId)}">
+      <span class="outline-index">Q${escapeHtml(item.questionNumber)}</span>
+      <span class="outline-copy">
+        <strong class="outline-title">${escapeHtml(getOutlineTitle(item.body))}</strong>
+        <span class="outline-meta">${escapeHtml(formatDateTime(item.timestamp))}</span>
+      </span>
+    </button>
+  `;
+}
+
+function getVisibleTimelineItems(timeline) {
+  return timeline.filter((item) => item.kind !== "reasoning" || state.showReasoning);
+}
+
+function finalizeTimeline(items) {
+  let questionNumber = 0;
+
+  return items.map((item, index) => {
+    const normalized = {
+      ...item,
+      anchorId: `timeline-item-${index + 1}`,
+    };
+
+    if (item.kind === "user") {
+      questionNumber += 1;
+      normalized.questionNumber = questionNumber;
+    }
+
+    return normalized;
+  });
+}
+
+function getOutlineTitle(body) {
+  return (
+    String(body || "")
+      .split(/\n+/)
+      .map((line) => line.trim())
+      .find(Boolean) || body
+  );
+}
+
 function isRenderableTimelineItem(item) {
-  return (item.kind === "user" || item.kind === "assistant") && Boolean(item.body?.trim());
+  return ["user", "assistant", "reasoning"].includes(item.kind) && Boolean(item.body?.trim());
 }
 
 function sanitizeConversationBody(body, kind) {
@@ -3534,6 +3890,8 @@ function applyLocale(locale) {
   setText(document.querySelector("#page-size-label"), t("labels.pageSize"));
   setText(document.querySelector("#detail-section-title"), t("section.detail"));
   setText(document.querySelector("#detail-overview-default-label"), t("labels.sessionId"));
+  setText(elements.detailOutlineTitle, t("section.questions"));
+  setText(elements.reasoningToggleLabel, t("detail.showReasoning"));
   setText(elements.pickDirectoryButton, t("buttons.pickDirectory"));
   setText(elements.reloadButton, t("buttons.reload"));
   setText(elements.deleteSelectedButton, t("buttons.deleteSelected"));
@@ -3543,6 +3901,8 @@ function applyLocale(locale) {
   setText(elements.nextPageButton, t("buttons.nextPage"));
   setText(elements.downloadCurrentButton, t("buttons.download"));
   setText(elements.modalCancelButton, t("buttons.cancel"));
+  elements.reasoningToggle.setAttribute("aria-label", t("detail.showReasoning"));
+  elements.reasoningToggle.setAttribute("title", t("detail.showReasoning"));
   elements.repoLink.setAttribute("aria-label", t("buttons.repository"));
   elements.repoLink.setAttribute("title", t("buttons.repository"));
 
@@ -3783,11 +4143,14 @@ function handleError(error) {
   console.error(error);
   closeModalDialog();
   state.previewRequestId += 1;
+  clearActiveConversationTarget();
   const message = error?.message || t("errors.unknown");
   elements.statusBadge.textContent = t("badge.error");
   setBadgeTone(elements.statusBadge, "danger");
   elements.statusText.textContent = message;
   renderEmptyList(message);
+  setBadgeText(elements.detailOutlineCount, "0");
+  elements.detailOutline.innerHTML = `<p class="empty-state">${escapeHtml(message)}</p>`;
   elements.detailPreview.innerHTML = `<p class="empty-state">${escapeHtml(message)}</p>`;
 }
 

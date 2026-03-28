@@ -27,7 +27,7 @@
     />
     <style>
 :root {
-  color-scheme: light dark;
+  color-scheme: light;
   --bg: #ececf1;
   --bg-elevated: #ffffff;
   --surface: rgba(255, 255, 255, 0.94);
@@ -49,6 +49,13 @@
   --warning-soft: rgba(154, 90, 0, 0.12);
   --info: #2563eb;
   --info-soft: rgba(37, 99, 235, 0.1);
+  --scrollbar-track: color-mix(in srgb, var(--surface-soft), var(--bg) 34%);
+  --scrollbar-thumb: color-mix(in srgb, var(--text-faint), var(--surface-strong) 42%);
+  --scrollbar-thumb-hover: color-mix(in srgb, var(--text-soft), var(--surface-strong) 32%);
+  --checkbox-bg: var(--surface-strong);
+  --checkbox-border: color-mix(in srgb, var(--border-strong), var(--bg-elevated) 18%);
+  --checkbox-border-hover: color-mix(in srgb, var(--accent), transparent 52%);
+  --checkbox-check: var(--accent-contrast);
   --shadow: 0 20px 50px rgba(17, 24, 39, 0.08);
   --radius-xl: 24px;
   --radius-lg: 18px;
@@ -57,6 +64,7 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
+    color-scheme: dark;
     --bg: #0b0b0d;
     --bg-elevated: #121216;
     --surface: rgba(20, 20, 24, 0.92);
@@ -78,11 +86,19 @@
     --warning-soft: rgba(255, 179, 71, 0.18);
     --info: #7ab3ff;
     --info-soft: rgba(122, 179, 255, 0.16);
+    --scrollbar-track: color-mix(in srgb, var(--surface-soft), #050506 38%);
+    --scrollbar-thumb: color-mix(in srgb, var(--text-faint), var(--surface-strong) 48%);
+    --scrollbar-thumb-hover: color-mix(in srgb, var(--text-soft), var(--surface-strong) 36%);
+    --checkbox-bg: color-mix(in srgb, var(--surface-strong), var(--bg-elevated) 16%);
+    --checkbox-border: color-mix(in srgb, var(--border-strong), var(--surface-strong) 22%);
+    --checkbox-border-hover: color-mix(in srgb, var(--accent), transparent 44%);
+    --checkbox-check: var(--accent-contrast);
     --shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
   }
 }
 
 :root[data-theme="light"] {
+  color-scheme: light;
   --bg: #ececf1;
   --bg-elevated: #ffffff;
   --surface: rgba(255, 255, 255, 0.94);
@@ -104,10 +120,18 @@
   --warning-soft: rgba(154, 90, 0, 0.12);
   --info: #2563eb;
   --info-soft: rgba(37, 99, 235, 0.1);
+  --scrollbar-track: color-mix(in srgb, var(--surface-soft), var(--bg) 34%);
+  --scrollbar-thumb: color-mix(in srgb, var(--text-faint), var(--surface-strong) 42%);
+  --scrollbar-thumb-hover: color-mix(in srgb, var(--text-soft), var(--surface-strong) 32%);
+  --checkbox-bg: var(--surface-strong);
+  --checkbox-border: color-mix(in srgb, var(--border-strong), var(--bg-elevated) 18%);
+  --checkbox-border-hover: color-mix(in srgb, var(--accent), transparent 52%);
+  --checkbox-check: var(--accent-contrast);
   --shadow: 0 20px 50px rgba(17, 24, 39, 0.08);
 }
 
 :root[data-theme="dark"] {
+  color-scheme: dark;
   --bg: #0b0b0d;
   --bg-elevated: #121216;
   --surface: rgba(20, 20, 24, 0.92);
@@ -129,6 +153,13 @@
   --warning-soft: rgba(255, 179, 71, 0.18);
   --info: #7ab3ff;
   --info-soft: rgba(122, 179, 255, 0.16);
+  --scrollbar-track: color-mix(in srgb, var(--surface-soft), #050506 38%);
+  --scrollbar-thumb: color-mix(in srgb, var(--text-faint), var(--surface-strong) 48%);
+  --scrollbar-thumb-hover: color-mix(in srgb, var(--text-soft), var(--surface-strong) 36%);
+  --checkbox-bg: color-mix(in srgb, var(--surface-strong), var(--bg-elevated) 16%);
+  --checkbox-border: color-mix(in srgb, var(--border-strong), var(--surface-strong) 22%);
+  --checkbox-border-hover: color-mix(in srgb, var(--accent), transparent 44%);
+  --checkbox-check: var(--accent-contrast);
   --shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
 }
 
@@ -377,9 +408,7 @@ h1 {
   background: var(--accent);
   color: var(--accent-contrast);
   border-color: transparent;
-  box-shadow:
-    inset 0 1px 0 color-mix(in srgb, var(--accent-contrast), transparent 72%),
-    0 10px 24px color-mix(in srgb, var(--accent), transparent 84%);
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--accent), transparent 84%);
 }
 
 .secondary-button,
@@ -420,9 +449,7 @@ h1 {
   color: var(--danger-contrast);
   border-color: transparent;
   white-space: nowrap;
-  box-shadow:
-    inset 0 1px 0 color-mix(in srgb, var(--danger-contrast), transparent 78%),
-    0 10px 24px color-mix(in srgb, var(--danger), transparent 84%);
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--danger), transparent 84%);
 }
 
 .danger-button.subtle {
@@ -511,9 +538,7 @@ button:disabled {
   background: var(--accent);
   color: var(--accent-contrast);
   border-color: transparent;
-  box-shadow:
-    inset 0 1px 0 color-mix(in srgb, var(--accent-contrast), transparent 72%),
-    0 10px 24px color-mix(in srgb, var(--accent), transparent 84%);
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--accent), transparent 84%);
 }
 
 .badge {
@@ -665,7 +690,76 @@ dd {
 .checkbox-row input,
 .session-checkbox,
 .detail-session-checkbox {
-  accent-color: var(--accent);
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  border-radius: 6px;
+  border: 1px solid var(--checkbox-border);
+  background: var(--checkbox-bg);
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  cursor: pointer;
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.checkbox-row input::before,
+.session-checkbox::before,
+.detail-session-checkbox::before {
+  content: "";
+  width: 9px;
+  height: 5px;
+  border: 2px solid var(--checkbox-check);
+  border-top: 0;
+  border-right: 0;
+  opacity: 0;
+  transform: translateY(-1px) rotate(-45deg) scale(0.82);
+  transition:
+    opacity 140ms ease,
+    transform 160ms ease;
+}
+
+.checkbox-row input:hover,
+.session-checkbox:hover,
+.detail-session-checkbox:hover {
+  border-color: var(--checkbox-border-hover);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent), transparent 92%);
+}
+
+.checkbox-row input:focus-visible,
+.session-checkbox:focus-visible,
+.detail-session-checkbox:focus-visible {
+  outline: none;
+  border-color: var(--checkbox-border-hover);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent), transparent 88%);
+}
+
+.checkbox-row input:checked,
+.session-checkbox:checked,
+.detail-session-checkbox:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.checkbox-row input:checked::before,
+.session-checkbox:checked::before,
+.detail-session-checkbox:checked::before {
+  opacity: 1;
+  transform: translateY(-1px) rotate(-45deg) scale(1);
+}
+
+.checkbox-row input:disabled,
+.session-checkbox:disabled,
+.detail-session-checkbox:disabled {
+  cursor: not-allowed;
+  opacity: 0.52;
+  box-shadow: none;
 }
 
 .filter-checkbox {
@@ -708,6 +802,31 @@ dd {
   overflow-y: auto;
   padding-right: 4px;
   scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+.list-scroll::-webkit-scrollbar,
+.detail-scroll::-webkit-scrollbar {
+  width: 10px;
+}
+
+.list-scroll::-webkit-scrollbar-track,
+.detail-scroll::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+  border-radius: 999px;
+}
+
+.list-scroll::-webkit-scrollbar-thumb,
+.detail-scroll::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 999px;
+  border: 2px solid var(--scrollbar-track);
+}
+
+.list-scroll::-webkit-scrollbar-thumb:hover,
+.detail-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
 }
 
 .detail-scroll {
@@ -820,7 +939,6 @@ dd {
 
 .session-id,
 .session-path,
-.detail-title,
 .detail-session-id {
   font-family: "IBM Plex Mono", monospace;
 }
@@ -900,15 +1018,6 @@ dd {
 .detail-block {
   display: grid;
   gap: 10px;
-}
-
-.detail-title {
-  font-size: 0.94rem;
-  padding: 12px 14px;
-  border-radius: var(--radius-lg);
-  background: var(--surface-soft);
-  border: 1px solid var(--border);
-  font-weight: 500;
 }
 
 .preview-item,
@@ -1517,7 +1626,6 @@ dd {
 
           <div class="detail-scroll">
             <div class="detail-block">
-              <h3 id="detail-title" class="detail-title">未选择会话</h3>
               <dl id="detail-overview" class="meta-grid">
                 <div>
                   <dt id="detail-overview-default-label">会话 ID</dt>
@@ -2006,7 +2114,6 @@ const elements = {
   pageIndicator: document.querySelector("#page-indicator"),
   sessionList: document.querySelector("#session-list"),
   detailCaption: document.querySelector("#detail-caption"),
-  detailTitle: document.querySelector("#detail-title"),
   detailOverview: document.querySelector("#detail-overview"),
   detailPreviewTitle: document.querySelector("#detail-preview-title"),
   detailPreview: document.querySelector("#detail-preview"),
@@ -2451,7 +2558,6 @@ function renderDetails(session) {
 
   if (!session) {
     elements.detailCaption.textContent = t("detail.unselectedCaption");
-    elements.detailTitle.textContent = t("detail.unselectedTitle");
     elements.detailOverview.innerHTML = [
       makeOverviewItem(t("labels.sessionId"), "-"),
       makeOverviewItem(t("labels.fileSize"), "-"),
@@ -2469,7 +2575,6 @@ function renderDetails(session) {
   }
 
   elements.detailCaption.textContent = session.relativePath || t("statusText.currentSession");
-  elements.detailTitle.textContent = session.title;
   elements.detailOverview.innerHTML = [
     makeOverviewItem(t("labels.sessionId"), session.id),
     makeOverviewItem(t("labels.fileSize"), formatBytes(session.size)),

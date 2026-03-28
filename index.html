@@ -955,11 +955,27 @@ dd {
 
 .pagination-bar {
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
-  gap: 10px;
-  padding-top: 10px;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding-top: 12px;
   border-top: 1px solid var(--border);
+}
+
+.pagination-bar .secondary-button.small {
+  min-width: 86px;
+}
+
+.pagination-bar .page-indicator {
+  min-width: 96px;
+  text-align: center;
+}
+
+.pagination-size {
+  margin-left: auto;
+  gap: 8px;
+  padding-left: 8px;
 }
 
 @media (min-width: 1041px) and (min-height: 760px) {
@@ -1404,6 +1420,13 @@ dd {
   .bottom-panels {
     grid-auto-rows: minmax(280px, 42dvh);
   }
+
+  .pagination-size {
+    margin-left: 0;
+    justify-content: space-between;
+    width: 100%;
+    padding-left: 0;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1578,16 +1601,6 @@ dd {
                 <button id="delete-selected-button" class="danger-button small" type="button" disabled hidden>
                   删除选中
                 </button>
-                <label class="inline-field">
-                  <span id="page-size-label">每页显示</span>
-                  <select id="page-size-select">
-                    <option value="10" selected>10</option>
-                    <option value="20">20</option>
-                    <option value="50">50</option>
-                    <option value="100">100</option>
-                  </select>
-                </label>
-                <span id="pagination-summary" class="badge">0 / 0</span>
               </div>
             </div>
 
@@ -1603,6 +1616,15 @@ dd {
               <button id="next-page-button" class="secondary-button small" type="button" disabled>
                 下一页
               </button>
+              <label class="inline-field pagination-size">
+                <span id="page-size-label">每页显示</span>
+                <select id="page-size-select">
+                  <option value="10" selected>10</option>
+                  <option value="20">20</option>
+                  <option value="50">50</option>
+                  <option value="100">100</option>
+                </select>
+              </label>
             </div>
           </section>
 
@@ -2110,7 +2132,6 @@ const elements = {
   metricStale: queryAny(["#metric-stale-count", "#metric-stale"]),
   metricSelected: queryAny(["#metric-selected-count", "#metric-selected"]),
   listCaption: document.querySelector("#list-caption"),
-  paginationSummary: document.querySelector("#pagination-summary"),
   pageIndicator: document.querySelector("#page-indicator"),
   sessionList: document.querySelector("#session-list"),
   detailCaption: document.querySelector("#detail-caption"),
@@ -2859,9 +2880,6 @@ function updateStatus() {
     });
   }
 
-  elements.paginationSummary.textContent = state.filteredSessions.length
-    ? t("pagination.summary", { start: startIndex, end: endIndex, total: state.filteredSessions.length })
-    : t("pagination.summaryEmpty");
   elements.pageIndicator.textContent = totalPages
     ? t("pagination.page", { current: state.currentPage, total: totalPages })
     : t("pagination.pageEmpty");
@@ -2887,7 +2905,6 @@ function setLoadingState(text) {
   elements.statusText.textContent = text;
   renderEmptyList(text);
   elements.pageIndicator.textContent = t("pagination.pageEmpty");
-  elements.paginationSummary.textContent = t("pagination.summaryEmpty");
 }
 
 function toggleSelection(id, checked) {

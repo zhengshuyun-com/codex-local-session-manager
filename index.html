@@ -1210,7 +1210,7 @@ dd {
   border-color: color-mix(in srgb, var(--accent), transparent 82%);
 }
 
-.conversation-item.reasoning {
+.conversation-item.commentary {
   margin-inline: clamp(14px, 4vw, 72px);
   background: color-mix(in srgb, var(--warning-soft), var(--surface-strong) 32%);
   border-color: color-mix(in srgb, var(--warning), transparent 70%);
@@ -1228,7 +1228,7 @@ dd {
   background: color-mix(in srgb, var(--accent), transparent 18%);
 }
 
-.conversation-item.reasoning::before {
+.conversation-item.commentary::before {
   background: var(--warning);
 }
 
@@ -1266,7 +1266,7 @@ dd {
   color: var(--text);
 }
 
-.conversation-item.reasoning .conversation-role {
+.conversation-item.commentary .conversation-role {
   background: color-mix(in srgb, var(--warning-soft), var(--surface-strong) 14%);
   border-color: color-mix(in srgb, var(--warning), transparent 68%);
   color: color-mix(in srgb, var(--warning), var(--text) 24%);
@@ -1626,7 +1626,7 @@ dd {
 
   .conversation-item.user,
   .conversation-item.assistant,
-  .conversation-item.reasoning {
+  .conversation-item.commentary {
     margin-left: 0;
     margin-right: 0;
   }
@@ -1878,8 +1878,8 @@ dd {
 	                  <span id="detail-message-count" class="badge">0</span>
 	                </div>
 	                <label class="checkbox-row detail-inline-toggle">
-	                  <input id="reasoning-toggle" type="checkbox" />
-	                  <span id="reasoning-toggle-label">显示思考摘要</span>
+	                  <input id="commentary-toggle" type="checkbox" />
+	                  <span id="commentary-toggle-label">显示过程消息</span>
 	                </label>
 	              </div>
 	              <div id="detail-preview" class="conversation-stream">
@@ -2001,7 +2001,11 @@ dd {
     <script type="module">
 const THEME_STORAGE_KEY = "codex-session-console-theme";
 const LOCALE_STORAGE_KEY = "codex-session-console-locale";
-const REASONING_VISIBILITY_STORAGE_KEY = "codex-session-console-show-reasoning";
+const COMMENTARY_VISIBILITY_STORAGE_KEY = "codex-session-console-show-commentary";
+const HANDLE_DB_NAME = "codex-session-console";
+const HANDLE_DB_VERSION = 1;
+const HANDLE_STORE_NAME = "handles";
+const ROOT_HANDLE_STORAGE_KEY = "root-directory";
 const REPOSITORY_URL = "https://github.com/zhengshuyun-com/codex-local-session-manager";
 
 const I18N = {
@@ -2098,7 +2102,7 @@ const I18N = {
       loading: "加载中.",
       statusNormal: "正常",
       statusStale: "脏索引",
-      showReasoning: "显示思考摘要",
+      showCommentary: "显示过程消息",
     },
     modal: {
       titleAll: "确认删除全部会话",
@@ -2137,7 +2141,7 @@ const I18N = {
     timeline: {
       user: "用户",
       assistant: "Codex",
-      reasoning: "思考摘要",
+      commentary: "过程消息",
       toolCall: "工具调用",
       toolOutput: "工具输出",
       historyInput: "历史输入 #{{index}}",
@@ -2251,7 +2255,7 @@ const I18N = {
       loading: "Loading.",
       statusNormal: "Normal",
       statusStale: "Stale index",
-      showReasoning: "Show reasoning summaries",
+      showCommentary: "Show progress updates",
     },
     modal: {
       titleAll: "Confirm delete all sessions",
@@ -2291,7 +2295,7 @@ const I18N = {
     timeline: {
       user: "User",
       assistant: "Codex",
-      reasoning: "Reasoning Summary",
+      commentary: "Progress",
       toolCall: "Tool call",
       toolOutput: "Tool output",
       historyInput: "History input #{{index}}",
@@ -2329,7 +2333,7 @@ const state = {
   pageSize: 10,
   locale: "zh-CN",
   themeMode: "light",
-  showReasoning: false,
+  showCommentary: false,
   modalKind: null,
   pendingActionMode: null,
   countdownRemaining: 0,
@@ -2373,8 +2377,8 @@ const elements = {
   detailPreviewTitle: document.querySelector("#detail-preview-title"),
   detailPreview: document.querySelector("#detail-preview"),
   detailMessageCount: document.querySelector("#detail-message-count"),
-  reasoningToggle: document.querySelector("#reasoning-toggle"),
-  reasoningToggleLabel: document.querySelector("#reasoning-toggle-label"),
+  commentaryToggle: document.querySelector("#commentary-toggle"),
+  commentaryToggleLabel: document.querySelector("#commentary-toggle-label"),
   downloadCurrentButton: document.querySelector("#download-current-button"),
   deleteCurrentButton: document.querySelector("#delete-current-button"),
   repoLink: document.querySelector("#repo-link"),
@@ -2416,7 +2420,7 @@ function initialize() {
   elements.prevPageButton.addEventListener("click", () => changePage(-1));
   elements.nextPageButton.addEventListener("click", () => changePage(1));
   elements.detailOutline.addEventListener("click", handleOutlineJump);
-  elements.reasoningToggle.addEventListener("change", handleReasoningToggleChange);
+  elements.commentaryToggle.addEventListener("change", handleCommentaryToggleChange);
   elements.downloadCurrentButton.addEventListener("click", () => downloadCurrentSession().catch(handleError));
   elements.deleteCurrentButton.addEventListener("click", () => openConfirmDialog("single"));
   elements.modalBackdrop.addEventListener("click", handleModalDismiss);
@@ -2427,18 +2431,161 @@ function initialize() {
 
   applyLocale(getInitialLocale());
   applyTheme(getInitialThemeMode());
-  applyReasoningVisibility(getInitialReasoningVisibility(), { rerender: false });
+  applyCommentaryVisibility(getInitialCommentaryVisibility(), { rerender: false });
   renderEmptyList(t("list.unscanned"));
   renderDetails(null);
   updateStatus();
+
+  if (isSupported) {
+    restorePersistedDirectory().catch((error) => {
+      console.warn("Failed to restore previously selected directory.", error);
+    });
+  }
+}
+
+function requestToPromise(request) {
+  return new Promise((resolve, reject) => {
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error || new Error("IndexedDB request failed."));
+  });
+}
+
+function transactionDone(transaction) {
+  return new Promise((resolve, reject) => {
+    transaction.oncomplete = () => resolve();
+    transaction.onabort = () => reject(transaction.error || new Error("IndexedDB transaction aborted."));
+    transaction.onerror = () => reject(transaction.error || new Error("IndexedDB transaction failed."));
+  });
+}
+
+async function openHandleDatabase() {
+  if (typeof indexedDB === "undefined") {
+    return null;
+  }
+
+  const request = indexedDB.open(HANDLE_DB_NAME, HANDLE_DB_VERSION);
+  request.onupgradeneeded = () => {
+    const database = request.result;
+
+    if (!database.objectStoreNames.contains(HANDLE_STORE_NAME)) {
+      database.createObjectStore(HANDLE_STORE_NAME);
+    }
+  };
+
+  return requestToPromise(request);
+}
+
+function isDirectoryHandle(handle) {
+  return Boolean(handle && handle.kind === "directory" && typeof handle.getDirectoryHandle === "function");
+}
+
+async function getPersistedRootHandle() {
+  const database = await openHandleDatabase();
+
+  if (!database) {
+    return null;
+  }
+
+  try {
+    const transaction = database.transaction(HANDLE_STORE_NAME, "readonly");
+    const request = transaction.objectStore(HANDLE_STORE_NAME).get(ROOT_HANDLE_STORAGE_KEY);
+    const [handle] = await Promise.all([requestToPromise(request), transactionDone(transaction)]);
+    return isDirectoryHandle(handle) ? handle : null;
+  } finally {
+    database.close();
+  }
+}
+
+async function persistRootHandle(handle) {
+  if (!isDirectoryHandle(handle)) {
+    return;
+  }
+
+  const database = await openHandleDatabase();
+
+  if (!database) {
+    return;
+  }
+
+  try {
+    const transaction = database.transaction(HANDLE_STORE_NAME, "readwrite");
+    transaction.objectStore(HANDLE_STORE_NAME).put(handle, ROOT_HANDLE_STORAGE_KEY);
+    await transactionDone(transaction);
+  } finally {
+    database.close();
+  }
+}
+
+async function clearPersistedRootHandle() {
+  const database = await openHandleDatabase();
+
+  if (!database) {
+    return;
+  }
+
+  try {
+    const transaction = database.transaction(HANDLE_STORE_NAME, "readwrite");
+    transaction.objectStore(HANDLE_STORE_NAME).delete(ROOT_HANDLE_STORAGE_KEY);
+    await transactionDone(transaction);
+  } finally {
+    database.close();
+  }
+}
+
+async function queryHandlePermission(handle, mode = "read") {
+  if (!handle || typeof handle.queryPermission !== "function") {
+    return "prompt";
+  }
+
+  try {
+    return await handle.queryPermission({ mode });
+  } catch {
+    return "prompt";
+  }
+}
+
+async function restorePersistedDirectory() {
+  const rootHandle = await getPersistedRootHandle();
+
+  if (!rootHandle) {
+    return false;
+  }
+
+  if ((await queryHandlePermission(rootHandle, "read")) !== "granted") {
+    return false;
+  }
+
+  try {
+    const sessionsDirHandle = await rootHandle.getDirectoryHandle("sessions");
+    state.rootHandle = rootHandle;
+    state.sessionsDirHandle = sessionsDirHandle;
+    elements.reloadButton.disabled = false;
+    await scanSessions();
+    return true;
+  } catch (error) {
+    if (error?.name === "NotFoundError") {
+      await clearPersistedRootHandle();
+      return false;
+    }
+
+    throw error;
+  }
 }
 
 async function pickDirectoryFromSystem() {
   try {
     const rootHandle = await window.showDirectoryPicker({ mode: "readwrite" });
+    const sessionsDirHandle = await rootHandle.getDirectoryHandle("sessions");
     state.rootHandle = rootHandle;
-    state.sessionsDirHandle = await rootHandle.getDirectoryHandle("sessions");
+    state.sessionsDirHandle = sessionsDirHandle;
     elements.reloadButton.disabled = false;
+
+    try {
+      await persistRootHandle(rootHandle);
+    } catch (error) {
+      console.warn("Failed to persist selected directory.", error);
+    }
+
     await scanSessions();
   } catch (error) {
     if (error?.name === "AbortError") {
@@ -2649,14 +2796,14 @@ function changePage(offset) {
   updateStatus();
 }
 
-function handleReasoningToggleChange() {
-  applyReasoningVisibility(elements.reasoningToggle.checked);
+function handleCommentaryToggleChange() {
+  applyCommentaryVisibility(elements.commentaryToggle.checked);
 }
 
-function applyReasoningVisibility(visible, { rerender = true } = {}) {
-  state.showReasoning = Boolean(visible);
-  localStorage.setItem(REASONING_VISIBILITY_STORAGE_KEY, state.showReasoning ? "1" : "0");
-  elements.reasoningToggle.checked = state.showReasoning;
+function applyCommentaryVisibility(visible, { rerender = true } = {}) {
+  state.showCommentary = Boolean(visible);
+  localStorage.setItem(COMMENTARY_VISIBILITY_STORAGE_KEY, state.showCommentary ? "1" : "0");
+  elements.commentaryToggle.checked = state.showCommentary;
 
   if (!rerender) {
     return;
@@ -2672,8 +2819,8 @@ function applyReasoningVisibility(visible, { rerender = true } = {}) {
   renderTimelinePanels(activeSession).catch(handleError);
 }
 
-function getInitialReasoningVisibility() {
-  return localStorage.getItem(REASONING_VISIBILITY_STORAGE_KEY) === "1";
+function getInitialCommentaryVisibility() {
+  return localStorage.getItem(COMMENTARY_VISIBILITY_STORAGE_KEY) === "1";
 }
 
 function applyFilters() {
@@ -2903,7 +3050,7 @@ function renderDetails(session) {
     elements.detailPreviewTitle.textContent = t("section.conversation");
     setBadgeText(elements.detailMessageCount, "0");
     elements.detailPreview.innerHTML = `<p class="empty-state">${escapeHtml(t("detail.noContent"))}</p>`;
-    elements.reasoningToggle.disabled = true;
+    elements.commentaryToggle.disabled = true;
     elements.downloadCurrentButton.disabled = true;
     elements.downloadCurrentButton.textContent = t("buttons.download");
     elements.deleteCurrentButton.disabled = true;
@@ -2920,7 +3067,7 @@ function renderDetails(session) {
   ].join("");
   elements.detailOutlineTitle.textContent = t("section.questions");
   elements.detailPreviewTitle.textContent = t("section.conversation");
-  elements.reasoningToggle.disabled = false;
+  elements.commentaryToggle.disabled = false;
   elements.downloadCurrentButton.disabled = !isSessionDownloadable(session);
   elements.downloadCurrentButton.textContent = t("buttons.download");
   elements.deleteCurrentButton.disabled = !isSessionDeletable(session);
@@ -3070,7 +3217,7 @@ function getTimelineDedupeKey(item) {
     return "";
   }
 
-  if (item.kind !== "user" && item.kind !== "assistant") {
+  if (!["user", "assistant", "commentary"].includes(item.kind)) {
     return "";
   }
 
@@ -3145,12 +3292,29 @@ function stripTimelineMeta(item) {
   };
 }
 
-function extractEventMessageItems(record) {
-  const eventType = record.payload?.type;
-  const timestamp = record.timestamp || record.payload?.timestamp || null;
+function getAssistantTimelineKind(phase) {
+  return phase === "commentary" ? "commentary" : "assistant";
+}
 
-  if (eventType === "user_message" && record.payload?.message) {
-    const body = sanitizeConversationBody(record.payload.message, "user");
+function getTimelineRoleLabel(kind) {
+  if (kind === "user") {
+    return t("timeline.user");
+  }
+
+  if (kind === "commentary") {
+    return t("timeline.commentary");
+  }
+
+  return t("timeline.assistant");
+}
+
+function extractEventMessageItems(record) {
+  const payload = record.payload || {};
+  const eventType = payload.type;
+  const timestamp = record.timestamp || payload.timestamp || null;
+
+  if (eventType === "user_message" && payload.message) {
+    const body = sanitizeConversationBody(payload.message, "user");
 
     if (!body) {
       return [];
@@ -3166,8 +3330,9 @@ function extractEventMessageItems(record) {
     ];
   }
 
-  if (eventType === "agent_message" && record.payload?.message) {
-    const body = sanitizeConversationBody(record.payload.message, "assistant");
+  if (eventType === "agent_message" && payload.message) {
+    const kind = getAssistantTimelineKind(payload.phase);
+    const body = sanitizeConversationBody(payload.message, "assistant");
 
     if (!body) {
       return [];
@@ -3175,8 +3340,8 @@ function extractEventMessageItems(record) {
 
     return [
       {
-        kind: "assistant",
-        roleLabel: t("timeline.assistant"),
+        kind,
+        roleLabel: getTimelineRoleLabel(kind),
         timestamp,
         body,
       },
@@ -3197,29 +3362,16 @@ function extractResponseItems(record) {
       return [];
     }
 
+    const kind = payload.role === "user" ? "user" : getAssistantTimelineKind(payload.phase);
+
     return [
       {
-        kind: payload.role === "user" ? "user" : "assistant",
-        roleLabel: payload.role === "user" ? t("timeline.user") : t("timeline.assistant"),
+        kind,
+        roleLabel: getTimelineRoleLabel(kind),
         timestamp,
         body,
       },
     ];
-  }
-
-  if (payload.type === "reasoning") {
-    const body = extractReasoningSummary(payload);
-
-    return body
-      ? [
-          {
-            kind: "reasoning",
-            roleLabel: t("timeline.reasoning"),
-            timestamp,
-            body,
-          },
-        ]
-      : [];
   }
 
   return [];
@@ -3248,39 +3400,6 @@ function extractMessageContent(content, role = "") {
     .trim();
 
   return sanitizeConversationBody(text, role);
-}
-
-function extractReasoningSummary(payload) {
-  const summary = Array.isArray(payload.summary) ? payload.summary : [];
-  const summaryText = summary
-    .map((item) => {
-      if (item?.type === "summary_text") {
-        return item.text || "";
-      }
-
-      return typeof item === "string" ? item : "";
-    })
-    .map((text) => normalizeReasoningSummaryText(text))
-    .filter(Boolean)
-    .join("\n\n")
-    .trim();
-
-  if (summaryText) {
-    return summaryText;
-  }
-
-  if (Array.isArray(payload.content)) {
-    return normalizeReasoningSummaryText(extractMessageContent(payload.content, "assistant"));
-  }
-
-  return "";
-}
-
-function normalizeReasoningSummaryText(text) {
-  return String(text || "")
-    .replace(/\*\*(.*?)\*\*/g, "$1")
-    .replace(/__(.*?)__/g, "$1")
-    .trim();
 }
 
 function buildFallbackTimeline(session) {
@@ -3332,7 +3451,7 @@ function renderQuestionOutlineItem(item) {
 }
 
 function getVisibleTimelineItems(timeline) {
-  return timeline.filter((item) => item.kind !== "reasoning" || state.showReasoning);
+  return timeline.filter((item) => item.kind !== "commentary" || state.showCommentary);
 }
 
 function finalizeTimeline(items) {
@@ -3363,7 +3482,7 @@ function getOutlineTitle(body) {
 }
 
 function isRenderableTimelineItem(item) {
-  return ["user", "assistant", "reasoning"].includes(item.kind) && Boolean(item.body?.trim());
+  return ["user", "assistant", "commentary"].includes(item.kind) && Boolean(item.body?.trim());
 }
 
 function sanitizeConversationBody(body, kind) {
@@ -3891,7 +4010,7 @@ function applyLocale(locale) {
   setText(document.querySelector("#detail-section-title"), t("section.detail"));
   setText(document.querySelector("#detail-overview-default-label"), t("labels.sessionId"));
   setText(elements.detailOutlineTitle, t("section.questions"));
-  setText(elements.reasoningToggleLabel, t("detail.showReasoning"));
+  setText(elements.commentaryToggleLabel, t("detail.showCommentary"));
   setText(elements.pickDirectoryButton, t("buttons.pickDirectory"));
   setText(elements.reloadButton, t("buttons.reload"));
   setText(elements.deleteSelectedButton, t("buttons.deleteSelected"));
@@ -3901,8 +4020,8 @@ function applyLocale(locale) {
   setText(elements.nextPageButton, t("buttons.nextPage"));
   setText(elements.downloadCurrentButton, t("buttons.download"));
   setText(elements.modalCancelButton, t("buttons.cancel"));
-  elements.reasoningToggle.setAttribute("aria-label", t("detail.showReasoning"));
-  elements.reasoningToggle.setAttribute("title", t("detail.showReasoning"));
+  elements.commentaryToggle.setAttribute("aria-label", t("detail.showCommentary"));
+  elements.commentaryToggle.setAttribute("title", t("detail.showCommentary"));
   elements.repoLink.setAttribute("aria-label", t("buttons.repository"));
   elements.repoLink.setAttribute("title", t("buttons.repository"));
 

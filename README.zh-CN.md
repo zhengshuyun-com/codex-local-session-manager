@@ -26,6 +26,7 @@
 
 ## 友链
 
+- [ModelRouter](https://model.zhengshuyun.net/) - 企业级 AI 中转站, 统一承接 Codex, Claude Code, Cursor 和自研应用的模型调用
 - [LINUX DO](https://linux.do) - 新的理想型社区
 
 ## 开源协议

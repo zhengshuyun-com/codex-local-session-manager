@@ -26,6 +26,7 @@ Data is processed locally in the browser and is not sent to any third party or b
 
 ## Friend Links
 
+- [ModelRouter](https://model.zhengshuyun.net/) - Enterprise AI model gateway for unified model access, token management, request logs, and usage cost tracking
 - [LINUX DO](https://linux.do) - 新的理想型社区
 
 ## License

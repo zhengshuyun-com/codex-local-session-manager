@@ -49,6 +49,9 @@
   --warning-soft: rgba(154, 90, 0, 0.12);
   --info: #2563eb;
   --info-soft: rgba(37, 99, 235, 0.1);
+  --highlight-bg: #ffe66d;
+  --highlight-text: #1a1400;
+  --highlight-ring: rgba(154, 90, 0, 0.38);
   --scrollbar-track: color-mix(in srgb, var(--surface-soft), var(--bg) 34%);
   --scrollbar-thumb: color-mix(in srgb, var(--text-faint), var(--surface-strong) 42%);
   --scrollbar-thumb-hover: color-mix(in srgb, var(--text-soft), var(--surface-strong) 32%);
@@ -86,6 +89,9 @@
     --warning-soft: rgba(255, 179, 71, 0.18);
     --info: #7ab3ff;
     --info-soft: rgba(122, 179, 255, 0.16);
+    --highlight-bg: #7af3ff;
+    --highlight-text: #041113;
+    --highlight-ring: rgba(122, 243, 255, 0.46);
     --scrollbar-track: color-mix(in srgb, var(--surface-soft), #050506 38%);
     --scrollbar-thumb: color-mix(in srgb, var(--text-faint), var(--surface-strong) 48%);
     --scrollbar-thumb-hover: color-mix(in srgb, var(--text-soft), var(--surface-strong) 36%);
@@ -120,6 +126,9 @@
   --warning-soft: rgba(154, 90, 0, 0.12);
   --info: #2563eb;
   --info-soft: rgba(37, 99, 235, 0.1);
+  --highlight-bg: #ffe66d;
+  --highlight-text: #1a1400;
+  --highlight-ring: rgba(154, 90, 0, 0.38);
   --scrollbar-track: color-mix(in srgb, var(--surface-soft), var(--bg) 34%);
   --scrollbar-thumb: color-mix(in srgb, var(--text-faint), var(--surface-strong) 42%);
   --scrollbar-thumb-hover: color-mix(in srgb, var(--text-soft), var(--surface-strong) 32%);
@@ -153,6 +162,9 @@
   --warning-soft: rgba(255, 179, 71, 0.18);
   --info: #7ab3ff;
   --info-soft: rgba(122, 179, 255, 0.16);
+  --highlight-bg: #7af3ff;
+  --highlight-text: #041113;
+  --highlight-ring: rgba(122, 243, 255, 0.46);
   --scrollbar-track: color-mix(in srgb, var(--surface-soft), #050506 38%);
   --scrollbar-thumb: color-mix(in srgb, var(--text-faint), var(--surface-strong) 48%);
   --scrollbar-thumb-hover: color-mix(in srgb, var(--text-soft), var(--surface-strong) 36%);
@@ -566,6 +578,12 @@ button:disabled {
   border-color: color-mix(in srgb, var(--warning), transparent 72%);
 }
 
+.badge[data-tone="info"] {
+  color: color-mix(in srgb, var(--info), var(--text) 18%);
+  background: color-mix(in srgb, var(--info-soft), var(--surface-soft) 26%);
+  border-color: color-mix(in srgb, var(--info), transparent 72%);
+}
+
 .badge[data-tone="danger"] {
   color: color-mix(in srgb, var(--danger), var(--text) 14%);
   background: color-mix(in srgb, var(--danger-soft), var(--surface-soft) 24%);
@@ -642,13 +660,22 @@ dd {
 
 .filter-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.25fr) minmax(110px, 0.75fr) minmax(110px, 0.75fr);
-  gap: 6px;
-  align-items: center;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+  align-items: end;
 }
 
 .search-field {
-  grid-column: auto;
+  grid-column: span 3;
+}
+
+.filter-control {
+  grid-column: span 2;
+}
+
+.filter-checkbox {
+  grid-column: span 6;
+  justify-self: start;
 }
 
 .field {
@@ -1036,6 +1063,60 @@ dd {
   gap: 10px;
 }
 
+.conversation-heading {
+  align-items: flex-start;
+}
+
+.conversation-title-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.conversation-filter {
+  display: inline-flex;
+  justify-content: flex-end;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.conversation-filter-button {
+  min-height: 28px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface-strong);
+  color: var(--text-soft);
+  padding: 4px 9px;
+  font-size: 0.78rem;
+  white-space: nowrap;
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
+}
+
+.conversation-filter-button:hover,
+.conversation-filter-button:focus-visible {
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+.conversation-filter-button.is-active {
+  border-color: color-mix(in srgb, var(--accent), transparent 45%);
+  background: var(--accent);
+  color: var(--accent-contrast);
+}
+
+.search-highlight {
+  border-radius: 4px;
+  background: var(--highlight-bg);
+  color: var(--highlight-text);
+  box-shadow: 0 0 0 1px var(--highlight-ring);
+  padding: 0 2px;
+}
+
 .preview-item,
 .empty-state {
   border-radius: var(--radius-lg);
@@ -1378,6 +1459,12 @@ dd {
     grid-template-columns: 1fr;
   }
 
+  .search-field,
+  .filter-control,
+  .filter-checkbox {
+    grid-column: 1 / -1;
+  }
+
   .hero-side-top {
     justify-content: stretch;
   }
@@ -1396,6 +1483,7 @@ dd {
   }
 
   .section-head,
+  .conversation-heading,
   .list-head-right,
   .session-row,
   .pagination-bar,
@@ -1415,6 +1503,10 @@ dd {
 
   .detail-action-row {
     justify-content: stretch;
+  }
+
+  .conversation-filter {
+    justify-content: flex-start;
   }
 
   .bottom-panels {
@@ -1531,10 +1623,14 @@ dd {
             </div>
             <div class="filter-grid">
               <label class="field search-field">
-                <span id="search-label">搜索</span>
+                <span id="metadata-search-label">标题 / 摘要 / ID</span>
                 <input id="search-input" type="search" placeholder="标题 / 摘要 / ID" />
               </label>
-              <label class="field">
+              <label class="field search-field">
+                <span id="conversation-search-label">用户 / Codex 正文</span>
+                <input id="conversation-search-input" type="search" placeholder="用户 / Codex 正文" />
+              </label>
+              <label class="field filter-control">
                 <span id="age-filter-label">时间</span>
                 <select id="age-filter">
                   <option id="age-option-all" value="all">全部</option>
@@ -1543,7 +1639,11 @@ dd {
                   <option id="age-option-older" value="older">30 天前</option>
                 </select>
               </label>
-              <label class="field">
+              <label class="field filter-control">
+                <span id="exact-date-label">精确日期</span>
+                <input id="exact-date-input" type="text" inputmode="numeric" maxlength="10" placeholder="yyyy/mm/dd" />
+              </label>
+              <label class="field filter-control">
                 <span id="sort-label">排序</span>
                 <select id="sort-select">
                   <option id="sort-option-updated" value="updated-desc">最近更新</option>
@@ -1657,9 +1757,12 @@ dd {
             </div>
 
             <div class="detail-block">
-              <div class="section-head compact">
-                <h2 id="detail-preview-title" class="section-title">完整对话</h2>
-                <span id="detail-message-count" class="badge">0</span>
+              <div class="section-head compact conversation-heading">
+                <div class="conversation-title-wrap">
+                  <h2 id="detail-preview-title" class="section-title">完整对话</h2>
+                  <span id="detail-message-count" class="badge">0</span>
+                </div>
+                <div id="conversation-filter" class="conversation-filter" aria-label="语块筛选"></div>
               </div>
               <div id="detail-preview" class="conversation-stream">
                 <p class="empty-state">暂无会话内容.</p>
@@ -1782,6 +1885,14 @@ const THEME_STORAGE_KEY = "codex-session-console-theme";
 const LOCALE_STORAGE_KEY = "codex-session-console-locale";
 const REPOSITORY_URL = "https://github.com/zhengshuyun-com/codex-local-session-manager";
 const TOOL_OUTPUT_LIMIT = 600;
+const CONVERSATION_FILTER_KINDS = ["user", "assistant", "toolCall", "toolOutput"];
+const CONVERSATION_FILTERS = [
+  { kind: "all", labelKey: "filter.all" },
+  { kind: "user", labelKey: "timeline.user" },
+  { kind: "assistant", labelKey: "timeline.assistant" },
+  { kind: "toolCall", labelKey: "timeline.toolCall" },
+  { kind: "toolOutput", labelKey: "timeline.toolOutput" },
+];
 
 const I18N = {
   "zh-CN": {
@@ -1804,9 +1915,13 @@ const I18N = {
     labels: {
       directory: "目录",
       scanned: "扫描",
-      search: "搜索",
+      search: "标题 / 摘要 / ID",
       searchPlaceholder: "标题 / 摘要 / ID",
+      conversationSearch: "用户 / Codex 正文",
+      conversationSearchPlaceholder: "用户 / Codex 正文",
       age: "时间",
+      exactDate: "精确日期",
+      exactDatePlaceholder: "yyyy/mm/dd",
       sort: "排序",
       staleOnly: "只看脏索引",
       totalSessions: "会话总数",
@@ -1872,6 +1987,7 @@ const I18N = {
       unselectedTitle: "未选择会话",
       noContent: "暂无会话内容.",
       noRenderableContent: "没有可展示的会话内容.",
+      noFilteredContent: "没有匹配的语块.",
       loading: "加载中.",
       statusNormal: "正常",
       statusStale: "脏索引",
@@ -1953,9 +2069,13 @@ const I18N = {
     labels: {
       directory: "Directory",
       scanned: "Scanned",
-      search: "Search",
+      search: "Title / summary / ID",
       searchPlaceholder: "Title / summary / ID",
+      conversationSearch: "User / Codex text",
+      conversationSearchPlaceholder: "User / Codex text",
       age: "Age",
+      exactDate: "Exact date",
+      exactDatePlaceholder: "yyyy/mm/dd",
       sort: "Sort",
       staleOnly: "Stale only",
       totalSessions: "Sessions",
@@ -2021,6 +2141,7 @@ const I18N = {
       unselectedTitle: "No session selected",
       noContent: "No session content yet.",
       noRenderableContent: "No conversation content available.",
+      noFilteredContent: "No matching conversation blocks.",
       loading: "Loading.",
       statusNormal: "Normal",
       statusStale: "Stale index",
@@ -2094,6 +2215,7 @@ const state = {
   sessions: [],
   filteredSessions: [],
   selectedIds: new Set(),
+  conversationFilters: new Set(CONVERSATION_FILTER_KINDS),
   activeSessionId: null,
   lastScannedAt: null,
   currentPage: 1,
@@ -2105,6 +2227,8 @@ const state = {
   countdownRemaining: 0,
   countdownTimer: null,
   previewRequestId: 0,
+  filterRequestId: 0,
+  filterDebounceTimer: null,
 };
 
 const elements = {
@@ -2114,7 +2238,9 @@ const elements = {
   deleteAllButton: document.querySelector("#delete-all-button"),
   cleanupStaleButton: document.querySelector("#cleanup-stale-button"),
   searchInput: document.querySelector("#search-input"),
+  conversationSearchInput: document.querySelector("#conversation-search-input"),
   ageFilter: document.querySelector("#age-filter"),
+  exactDateInput: document.querySelector("#exact-date-input"),
   sortSelect: document.querySelector("#sort-select"),
   staleOnlyCheckbox: document.querySelector("#stale-only-checkbox"),
   selectPageButton: document.querySelector("#select-page-button"),
@@ -2137,6 +2263,7 @@ const elements = {
   detailCaption: document.querySelector("#detail-caption"),
   detailOverview: document.querySelector("#detail-overview"),
   detailPreviewTitle: document.querySelector("#detail-preview-title"),
+  conversationFilter: document.querySelector("#conversation-filter"),
   detailPreview: document.querySelector("#detail-preview"),
   detailMessageCount: document.querySelector("#detail-message-count"),
   downloadCurrentButton: document.querySelector("#download-current-button"),
@@ -2166,13 +2293,17 @@ function initialize() {
   elements.pageSizeSelect.value = String(state.pageSize);
   elements.repoLink.href = REPOSITORY_URL;
 
+  renderConversationFilters();
+
   elements.pickDirectoryButton.addEventListener("click", openDirectoryHelpDialog);
   elements.reloadButton.addEventListener("click", () => scanSessions().catch(handleError));
   elements.deleteSelectedButton.addEventListener("click", () => openConfirmDialog("selected"));
   elements.deleteAllButton.addEventListener("click", () => openConfirmDialog("all"));
   elements.cleanupStaleButton.addEventListener("click", () => openConfirmDialog("stale"));
   elements.searchInput.addEventListener("input", handleFilterChange);
+  elements.conversationSearchInput.addEventListener("input", handleFilterChange);
   elements.ageFilter.addEventListener("change", handleFilterChange);
+  elements.exactDateInput.addEventListener("input", handleExactDateInput);
   elements.sortSelect.addEventListener("change", handleFilterChange);
   elements.staleOnlyCheckbox.addEventListener("change", handleFilterChange);
   elements.selectPageButton.addEventListener("click", handleSelectCurrentPage);
@@ -2269,7 +2400,7 @@ async function scanSessions() {
     state.activeSessionId = state.sessions[0]?.id || null;
   }
 
-  applyFilters();
+  await applyFilters();
 }
 
 async function readSessionIndex(rootHandle) {
@@ -2385,7 +2516,17 @@ async function* walkDirectory(directoryHandle, path = []) {
 
 function handleFilterChange() {
   state.currentPage = 1;
-  applyFilters();
+  scheduleApplyFilters();
+}
+
+function handleExactDateInput(event) {
+  const formatted = formatExactDateInput(event.target.value);
+
+  if (event.target.value !== formatted) {
+    event.target.value = formatted;
+  }
+
+  handleFilterChange();
 }
 
 function handlePageSizeChange() {
@@ -2409,23 +2550,38 @@ function changePage(offset) {
   updateStatus();
 }
 
-function applyFilters() {
-  const query = elements.searchInput.value.trim().toLowerCase();
+function scheduleApplyFilters() {
+  window.clearTimeout(state.filterDebounceTimer);
+  state.filterDebounceTimer = window.setTimeout(() => {
+    applyFilters().catch(handleError);
+  }, 160);
+}
+
+async function applyFilters() {
+  const requestId = ++state.filterRequestId;
+  const metadataQuery = getMetadataSearchQuery().toLowerCase();
+  const conversationQuery = getConversationSearchQuery().toLowerCase();
   const age = elements.ageFilter.value;
+  const exactDate = parseExactDateFilter(elements.exactDateInput.value);
   const sort = elements.sortSelect.value;
   const staleOnly = elements.staleOnlyCheckbox.checked;
   const now = Date.now();
+  const filteredSessions = [];
 
-  state.filteredSessions = state.sessions.filter((session) => {
+  if (conversationQuery) {
+    elements.statusBadge.textContent = t("badge.loading");
+    setBadgeTone(elements.statusBadge, "info");
+  }
+
+  for (const session of state.sessions) {
     if (staleOnly && !session.stale) {
-      return false;
+      continue;
     }
 
-    if (query) {
+    if (metadataQuery) {
       const haystack = [
         session.title,
         session.id,
-        session.relativePath,
         session.previewSummary,
         ...session.historyPreview,
       ]
@@ -2433,35 +2589,61 @@ function applyFilters() {
         .join(" ")
         .toLowerCase();
 
-      if (!haystack.includes(query)) {
-        return false;
+      if (!haystack.includes(metadataQuery)) {
+        continue;
       }
+    }
+
+    if (conversationQuery && !(await sessionMatchesConversationQuery(session, conversationQuery))) {
+      continue;
+    }
+
+    if (requestId !== state.filterRequestId) {
+      return;
+    }
+
+    if (exactDate.status === "invalid") {
+      continue;
+    }
+
+    if (exactDate.status === "ready" && getSessionDateKey(session) !== exactDate.key) {
+      continue;
     }
 
     if (age !== "all") {
       const updatedTime = new Date(session.updatedAt || session.lastModified || 0).getTime();
 
       if (!updatedTime) {
-        return age === "older";
+        if (age === "older") {
+          filteredSessions.push(session);
+        }
+
+        continue;
       }
 
       const diff = now - updatedTime;
 
       if (age === "7d" && diff > 7 * 24 * 60 * 60 * 1000) {
-        return false;
+        continue;
       }
 
       if (age === "30d" && diff > 30 * 24 * 60 * 60 * 1000) {
-        return false;
+        continue;
       }
 
       if (age === "older" && diff <= 30 * 24 * 60 * 60 * 1000) {
-        return false;
+        continue;
       }
     }
 
-    return true;
-  });
+    filteredSessions.push(session);
+  }
+
+  if (requestId !== state.filterRequestId) {
+    return;
+  }
+
+  state.filteredSessions = filteredSessions;
 
   state.filteredSessions.sort((left, right) => {
     if (sort === "size-desc") {
@@ -2510,11 +2692,11 @@ function renderList() {
     const summary = node.querySelector(".session-summary");
     const count = node.querySelector(".group-count");
 
-    title.textContent = session.stale ? `${session.title} · ${t("detail.statusStale")}` : session.title;
+    title.innerHTML = highlightSearchText(session.stale ? `${session.title} · ${t("detail.statusStale")}` : session.title, getMetadataSearchQuery());
     size.textContent = formatBytes(session.size);
-    id.textContent = abbreviateId(session.id);
+    id.innerHTML = highlightSearchText(abbreviateId(session.id), getMetadataSearchQuery());
     updated.textContent = formatDateTime(session.updatedAt);
-    summary.textContent = buildSessionSummary(session);
+    summary.innerHTML = highlightSearchText(buildSessionSummary(session), getMetadataSearchQuery());
     checkbox.checked = state.selectedIds.has(session.id);
     checkbox.disabled = !isSessionDeletable(session);
 
@@ -2643,14 +2825,20 @@ async function renderTimeline(session) {
     return;
   }
 
-  setBadgeText(elements.detailMessageCount, String(timeline.length));
+  const visibleTimeline = filterConversationTimeline(timeline);
+  setBadgeText(elements.detailMessageCount, `${visibleTimeline.length}/${timeline.length}`);
 
   if (!timeline.length) {
     elements.detailPreview.innerHTML = `<p class="empty-state">${escapeHtml(t("detail.noRenderableContent"))}</p>`;
     return;
   }
 
-  elements.detailPreview.innerHTML = timeline.map(renderConversationItem).join("");
+  if (!visibleTimeline.length) {
+    elements.detailPreview.innerHTML = `<p class="empty-state">${escapeHtml(t("detail.noFilteredContent"))}</p>`;
+    return;
+  }
+
+  elements.detailPreview.innerHTML = visibleTimeline.map(renderConversationItem).join("");
 }
 
 async function getSessionTimeline(session) {
@@ -2812,6 +3000,7 @@ function parseTimelineTimestamp(value) {
 function stripTimelineMeta(item) {
   return {
     kind: item.kind,
+    filterKind: item.filterKind || item.kind,
     roleLabel: item.roleLabel,
     timestamp: item.timestamp,
     body: item.body,
@@ -2826,6 +3015,7 @@ function extractEventMessageItems(record) {
     return [
       {
         kind: "user",
+        filterKind: "user",
         roleLabel: t("timeline.user"),
         timestamp,
         body: record.payload.message.trim(),
@@ -2837,6 +3027,7 @@ function extractEventMessageItems(record) {
     return [
       {
         kind: "assistant",
+        filterKind: "assistant",
         roleLabel: t("timeline.assistant"),
         timestamp,
         body: record.payload.message.trim(),
@@ -2861,6 +3052,7 @@ function extractResponseItems(record) {
     return [
       {
         kind: payload.role === "user" ? "user" : "assistant",
+        filterKind: payload.role === "user" ? "user" : "assistant",
         roleLabel: payload.role === "user" ? t("timeline.user") : t("timeline.assistant"),
         timestamp,
         body,
@@ -2875,6 +3067,7 @@ function extractResponseItems(record) {
       ? [
           {
             kind: "system",
+            filterKind: "toolCall",
             roleLabel: t("timeline.toolCall"),
             timestamp,
             body,
@@ -2890,6 +3083,7 @@ function extractResponseItems(record) {
       ? [
           {
             kind: "system",
+            filterKind: "toolOutput",
             roleLabel: t("timeline.toolOutput"),
             timestamp,
             body,
@@ -2951,10 +3145,83 @@ function buildFallbackTimeline(session) {
     .filter(Boolean)
     .map((body, index) => ({
       kind: "user",
+      filterKind: "user",
       roleLabel: t("timeline.historyInput", { index: index + 1 }),
       timestamp: null,
       body,
     }));
+}
+
+function renderConversationFilters() {
+  if (!elements.conversationFilter) {
+    return;
+  }
+
+  elements.conversationFilter.innerHTML = CONVERSATION_FILTERS.map((filter) => {
+    const active = isConversationFilterActive(filter.kind);
+
+    return `
+      <button
+        class="conversation-filter-button${active ? " is-active" : ""}"
+        type="button"
+        data-kind="${escapeHtml(filter.kind)}"
+        aria-pressed="${active ? "true" : "false"}"
+      >${escapeHtml(t(filter.labelKey))}</button>
+    `;
+  }).join("");
+
+  for (const button of elements.conversationFilter.querySelectorAll(".conversation-filter-button")) {
+    button.addEventListener("click", () => {
+      toggleConversationFilter(button.dataset.kind);
+    });
+  }
+}
+
+function isConversationFilterActive(kind) {
+  if (kind === "all") {
+    return state.conversationFilters.size === CONVERSATION_FILTER_KINDS.length;
+  }
+
+  return state.conversationFilters.has(kind);
+}
+
+function toggleConversationFilter(kind) {
+  if (kind === "all") {
+    state.conversationFilters = new Set(CONVERSATION_FILTER_KINDS);
+  } else if (state.conversationFilters.size === CONVERSATION_FILTER_KINDS.length && CONVERSATION_FILTER_KINDS.includes(kind)) {
+    state.conversationFilters = new Set([kind]);
+  } else if (state.conversationFilters.has(kind)) {
+    state.conversationFilters.delete(kind);
+  } else if (CONVERSATION_FILTER_KINDS.includes(kind)) {
+    state.conversationFilters.add(kind);
+  }
+
+  if (!state.conversationFilters.size) {
+    state.conversationFilters = new Set(CONVERSATION_FILTER_KINDS);
+  }
+
+  renderConversationFilters();
+  renderDetails(getActiveSession());
+}
+
+function filterConversationTimeline(timeline) {
+  if (state.conversationFilters.size === CONVERSATION_FILTER_KINDS.length) {
+    return timeline;
+  }
+
+  return timeline.filter((item) => state.conversationFilters.has(item.filterKind || item.kind));
+}
+
+async function sessionMatchesConversationQuery(session, query) {
+  const timeline = await getSessionTimeline(session);
+
+  return timeline.some((item) => {
+    if (item.filterKind !== "user" && item.filterKind !== "assistant") {
+      return false;
+    }
+
+    return String(item.body || "").toLowerCase().includes(query);
+  });
 }
 
 function renderConversationItem(item) {
@@ -2964,9 +3231,13 @@ function renderConversationItem(item) {
         <span class="conversation-role">${escapeHtml(item.roleLabel)}</span>
         <span>${escapeHtml(formatDateTime(item.timestamp))}</span>
       </div>
-      <div class="conversation-body">${escapeHtml(item.body)}</div>
+      <div class="conversation-body">${highlightSearchText(item.body, shouldHighlightConversationItem(item) ? getConversationSearchQuery() : "")}</div>
     </article>
   `;
+}
+
+function shouldHighlightConversationItem(item) {
+  return item.filterKind === "user" || item.filterKind === "assistant";
 }
 
 function updateStatus() {
@@ -3425,9 +3696,13 @@ function applyLocale(locale) {
   setText(document.querySelector("#status-directory-label"), t("labels.directory"));
   setText(document.querySelector("#status-scanned-label"), t("labels.scanned"));
   setText(document.querySelector("#filter-title"), t("section.filter"));
-  setText(document.querySelector("#search-label"), t("labels.search"));
+  setText(document.querySelector("#metadata-search-label"), t("labels.search"));
+  setText(document.querySelector("#conversation-search-label"), t("labels.conversationSearch"));
   elements.searchInput.placeholder = t("labels.searchPlaceholder");
+  elements.conversationSearchInput.placeholder = t("labels.conversationSearchPlaceholder");
   setText(document.querySelector("#age-filter-label"), t("labels.age"));
+  setText(document.querySelector("#exact-date-label"), t("labels.exactDate"));
+  elements.exactDateInput.placeholder = t("labels.exactDatePlaceholder");
   setText(document.querySelector("#sort-label"), t("labels.sort"));
   setText(document.querySelector("#stale-only-label"), t("labels.staleOnly"));
   setText(document.querySelector("#age-option-all"), t("filter.all"));
@@ -3447,6 +3722,7 @@ function applyLocale(locale) {
   setText(document.querySelector("#page-size-label"), t("labels.pageSize"));
   setText(document.querySelector("#detail-section-title"), t("section.detail"));
   setText(document.querySelector("#detail-overview-default-label"), t("labels.sessionId"));
+  elements.conversationFilter?.setAttribute("aria-label", t("section.conversation"));
   setText(elements.pickDirectoryButton, t("buttons.pickDirectory"));
   setText(elements.reloadButton, t("buttons.reload"));
   setText(elements.deleteSelectedButton, t("buttons.deleteSelected"));
@@ -3464,6 +3740,7 @@ function applyLocale(locale) {
   elements.localeToggleButton.setAttribute("title", t("locale.switchTo"));
   elements.themeToggleButton.setAttribute("aria-label", getThemeToggleLabel(state.themeMode));
   elements.themeToggleButton.setAttribute("title", getThemeToggleLabel(state.themeMode));
+  renderConversationFilters();
 
   if (state.modalKind && !elements.modal.hidden) {
     refreshModalDialog();
@@ -3669,6 +3946,67 @@ function formatDateTime(value) {
   }).format(date);
 }
 
+function formatExactDateInput(value) {
+  const digits = String(value || "").replace(/\D/g, "").slice(0, 8);
+  const parts = [];
+
+  if (digits.length <= 4) {
+    return digits;
+  }
+
+  parts.push(digits.slice(0, 4));
+
+  if (digits.length <= 6) {
+    parts.push(digits.slice(4));
+    return parts.join("/");
+  }
+
+  parts.push(digits.slice(4, 6));
+  parts.push(digits.slice(6));
+  return parts.join("/");
+}
+
+function parseExactDateFilter(value) {
+  const digits = String(value || "").replace(/\D/g, "");
+
+  if (!digits) {
+    return { status: "empty", key: "" };
+  }
+
+  if (digits.length < 8) {
+    return { status: "partial", key: "" };
+  }
+
+  const year = Number(digits.slice(0, 4));
+  const month = Number(digits.slice(4, 6));
+  const day = Number(digits.slice(6, 8));
+  const date = new Date(year, month - 1, day);
+
+  if (
+    date.getFullYear() !== year ||
+    date.getMonth() !== month - 1 ||
+    date.getDate() !== day
+  ) {
+    return { status: "invalid", key: "" };
+  }
+
+  return { status: "ready", key: `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6, 8)}` };
+}
+
+function getSessionDateKey(session) {
+  const date = new Date(session.updatedAt || session.lastModified || 0);
+
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  const year = String(date.getFullYear()).padStart(4, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
 function makeOverviewItem(label, value) {
   return `<div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd></div>`;
 }
@@ -3689,6 +4027,48 @@ function setBadgeTone(node, tone = "neutral") {
   if (node) {
     node.dataset.tone = tone;
   }
+}
+
+function getMetadataSearchQuery() {
+  return elements.searchInput.value.trim();
+}
+
+function getConversationSearchQuery() {
+  return elements.conversationSearchInput.value.trim();
+}
+
+function highlightSearchText(value, query) {
+  const text = String(value ?? "");
+  const normalizedQuery = String(query || "").trim();
+
+  if (!normalizedQuery) {
+    return escapeHtml(text);
+  }
+
+  const lowerText = text.toLowerCase();
+  const lowerQuery = normalizedQuery.toLowerCase();
+
+  if (!lowerQuery || !lowerText.includes(lowerQuery)) {
+    return escapeHtml(text);
+  }
+
+  const parts = [];
+  let cursor = 0;
+
+  while (cursor < text.length) {
+    const index = lowerText.indexOf(lowerQuery, cursor);
+
+    if (index === -1) {
+      parts.push(escapeHtml(text.slice(cursor)));
+      break;
+    }
+
+    parts.push(escapeHtml(text.slice(cursor, index)));
+    parts.push(`<mark class="search-highlight">${escapeHtml(text.slice(index, index + normalizedQuery.length))}</mark>`);
+    cursor = index + normalizedQuery.length;
+  }
+
+  return parts.join("");
 }
 
 function escapeHtml(value) {

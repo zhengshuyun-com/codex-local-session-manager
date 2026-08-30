@@ -1746,7 +1746,7 @@ dd {
             </div>
           </div>
 
-          <div class="detail-scroll">
+          <div id="detail-scroll" class="detail-scroll">
             <div class="detail-block">
               <dl id="detail-overview" class="meta-grid">
                 <div>
@@ -2262,6 +2262,7 @@ const elements = {
   sessionList: document.querySelector("#session-list"),
   detailCaption: document.querySelector("#detail-caption"),
   detailOverview: document.querySelector("#detail-overview"),
+  detailScroll: document.querySelector("#detail-scroll"),
   detailPreviewTitle: document.querySelector("#detail-preview-title"),
   conversationFilter: document.querySelector("#conversation-filter"),
   detailPreview: document.querySelector("#detail-preview"),
@@ -2794,6 +2795,10 @@ function renderDetails(session) {
   elements.downloadCurrentButton.textContent = t("buttons.download");
   elements.deleteCurrentButton.disabled = !isSessionDeletable(session);
   elements.deleteCurrentButton.textContent = t("buttons.delete");
+
+  if (elements.detailScroll) {
+    elements.detailScroll.scrollTop = 0;
+  }
 
   renderTimeline(session).catch(handleError);
 }

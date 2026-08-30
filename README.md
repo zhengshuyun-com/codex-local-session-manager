@@ -18,7 +18,7 @@ A local web tool for browsing and cleaning Codex session history.
 - Search keyword highlighting in titles, summaries, and conversation text
 - Full conversation preview for each session
 - Delete current, selected, or all sessions
-- Clean up stale index records left by removed session files
+- Clean up stale index records left by removed session files (a stale index is a record that still exists in the index but whose session file is gone)
 
 ## Open Online
 

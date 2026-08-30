@@ -2314,6 +2314,11 @@ function initialize() {
   elements.deleteCurrentButton.addEventListener("click", () => openConfirmDialog("single"));
   elements.modalBackdrop.addEventListener("click", handleModalDismiss);
   elements.modalCancelButton.addEventListener("click", handleModalDismiss);
+  window.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !elements.modal.hidden) {
+      handleModalDismiss();
+    }
+  });
   elements.modalConfirmButton.addEventListener("click", () => handleModalConfirm().catch(handleError));
   elements.localeToggleButton.addEventListener("click", cycleLocale);
   elements.themeToggleButton.addEventListener("click", cycleTheme);

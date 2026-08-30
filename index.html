@@ -3483,8 +3483,20 @@ async function confirmPendingAction() {
     state.timelineCache.delete(session.id);
   }
 
+  await removeSessionRecordsFromIndexes(targets);
   closeModalDialog();
   await scanSessions();
+}
+
+async function removeSessionRecordsFromIndexes(sessions) {
+  const removedIds = new Set(sessions.map((session) => session.id));
+
+  if (!removedIds.size) {
+    return;
+  }
+
+  await filterJsonLinesFile("session_index.jsonl", (record) => !record?.id || !removedIds.has(record.id));
+  await filterJsonLinesFile("history.jsonl", (record) => !record?.session_id || !removedIds.has(record.session_id));
 }
 
 function getActionTargets(mode) {

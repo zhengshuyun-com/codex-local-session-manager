@@ -826,6 +826,7 @@ dd {
 .list-scroll,
 .detail-scroll {
   min-height: 0;
+  max-height: 60vh;
   overflow-y: auto;
   padding-right: 4px;
   scrollbar-gutter: stable;
@@ -1746,7 +1747,7 @@ dd {
             </div>
           </div>
 
-          <div class="detail-scroll">
+          <div id="detail-scroll" class="detail-scroll">
             <div class="detail-block">
               <dl id="detail-overview" class="meta-grid">
                 <div>
@@ -2262,6 +2263,7 @@ const elements = {
   sessionList: document.querySelector("#session-list"),
   detailCaption: document.querySelector("#detail-caption"),
   detailOverview: document.querySelector("#detail-overview"),
+  detailScroll: document.querySelector("#detail-scroll"),
   detailPreviewTitle: document.querySelector("#detail-preview-title"),
   conversationFilter: document.querySelector("#conversation-filter"),
   detailPreview: document.querySelector("#detail-preview"),
@@ -2314,6 +2316,11 @@ function initialize() {
   elements.deleteCurrentButton.addEventListener("click", () => openConfirmDialog("single"));
   elements.modalBackdrop.addEventListener("click", handleModalDismiss);
   elements.modalCancelButton.addEventListener("click", handleModalDismiss);
+  window.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !elements.modal.hidden) {
+      handleModalDismiss();
+    }
+  });
   elements.modalConfirmButton.addEventListener("click", () => handleModalConfirm().catch(handleError));
   elements.localeToggleButton.addEventListener("click", cycleLocale);
   elements.themeToggleButton.addEventListener("click", cycleTheme);
@@ -2789,6 +2796,10 @@ function renderDetails(session) {
   elements.downloadCurrentButton.textContent = t("buttons.download");
   elements.deleteCurrentButton.disabled = !isSessionDeletable(session);
   elements.deleteCurrentButton.textContent = t("buttons.delete");
+
+  if (elements.detailScroll) {
+    elements.detailScroll.scrollTop = 0;
+  }
 
   renderTimeline(session).catch(handleError);
 }
@@ -3483,8 +3494,20 @@ async function confirmPendingAction() {
     state.timelineCache.delete(session.id);
   }
 
+  await removeSessionRecordsFromIndexes(targets);
   closeModalDialog();
   await scanSessions();
+}
+
+async function removeSessionRecordsFromIndexes(sessions) {
+  const removedIds = new Set(sessions.map((session) => session.id));
+
+  if (!removedIds.size) {
+    return;
+  }
+
+  await filterJsonLinesFile("session_index.jsonl", (record) => !record?.id || !removedIds.has(record.id));
+  await filterJsonLinesFile("history.jsonl", (record) => !record?.session_id || !removedIds.has(record.session_id));
 }
 
 function getActionTargets(mode) {
@@ -3774,7 +3797,7 @@ function applyTheme(mode) {
   state.themeMode = mode;
   document.documentElement.setAttribute("data-theme", mode);
   localStorage.setItem(THEME_STORAGE_KEY, mode);
-  elements.themeToggleButton.classList.add("is-active");
+  elements.themeToggleButton.classList.toggle("is-active", mode === "dark");
   elements.themeToggleButton.innerHTML = `<span class="theme-icon" aria-hidden="true">${getThemeIcon()}</span>`;
   elements.themeToggleButton.setAttribute("aria-label", getThemeToggleLabel(mode));
   elements.themeToggleButton.setAttribute("title", getThemeToggleLabel(mode));
@@ -3846,7 +3869,7 @@ function ensureRootSelected() {
 }
 
 function extractSessionId(fileName) {
-  const match = fileName.match(/([0-9a-f]{8,}-[0-9a-f-]{20,})\.jsonl$/i);
+  const match = fileName.match(/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\.jsonl$/i);
   return match?.[1] || null;
 }
 
